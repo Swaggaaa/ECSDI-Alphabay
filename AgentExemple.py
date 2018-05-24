@@ -81,16 +81,17 @@ def agentbehavior1(cola):
         res = graph.query("""
                         prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
                         
-                        SELECT ?nombre
+                        SELECT ?nombre ?direccion
                         WHERE
                         {  
                             ?Centro_logistico rdf:type ab:Centro_logistico.
                             ?Centro_logistico ab:nombre ?nombre.
+                            ?Centro_logistico ab:direccion ?direccion.
                         }""", initNs={'ab': agn})
         for row in res:
-            print("nombre: %s" % row)
+            print("nombre: %s   |   direccion: %s " % row)
 
-        time.sleep(60)
+        time.sleep(1)
         pass
 
     pass

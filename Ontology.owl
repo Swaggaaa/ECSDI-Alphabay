@@ -1,0 +1,802 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#"
+     xml:base="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#a_partir_de -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#a_partir_de">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Catalogo"/>
+        <rdfs:comment>Cardinalidad 1 a 1 en sentido de dominio a rango (1 a N en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#a_traves_de -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#a_traves_de">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Vendedor"/>
+        <rdfs:comment>Cardinalidad 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#compuesto_por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#compuesto_por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad de 1 a N en sentido dominio a rango (1 a 1 en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#confecciona -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#confecciona">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:comment>Cardinalidad de 1 a N en sentido dominio a rango (1 a 1 en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#contiene -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#contiene">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Catalogo"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad 1 a N en sentido dominio a rango (1 a 1 en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#de -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#de">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Recomendacion"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad de 1 a N en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#de_este -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#de_este">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Compra"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:comment>Cardinalidad de 1 a 1 en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#de_un -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#de_un">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad de 1 a 1 en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#del -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#del">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:comment>Es una relacion de 1 a 1 en sentido dominio rango (1 a N en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#dispone_de -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#dispone_de">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad de 1 a N en sentido dominio a rango (1 a 1 en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#enviado_por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#enviado_por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico"/>
+        <rdfs:comment>Cardinalidad de 1 a N en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#es_transportado_por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#es_transportado_por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Empresa_de_transporte"/>
+        <rdfs:comment>Cardinalidad de 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#formado_por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#formado_por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad de 1 a N en sentido dominio a rango (1  a 1 en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#obtiene -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#obtiene">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Recomendacion"/>
+        <rdfs:comment>Cardinalidad de 1 a N en sentido dominio a rango (1 a 1 en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion"/>
+        <rdfs:comment>Cardinalidad de 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por_este -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por_este">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Equivocacion"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad 1  a 1 en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por_un -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por_un">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Motivo"/>
+        <rdfs:comment>Cardinalidad 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#realiza_una -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#realiza_una">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Compra"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion"/>
+        <rdfs:comment>Cardinalidad de 1 a N en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#resulta -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#resulta">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad de 1 a N en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#sobre_un -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#sobre_un">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Cardinalidad de 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#tiene -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#tiene">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion"/>
+        <rdfs:comment>Cardinalidad de 1 a N en sentido domino a rango, (1 a 1 en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#tiene_catalogo_de -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#tiene_catalogo_de">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Externo"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:comment>Tiene cardinalidad de 1 a N en sentido dominio a rango (cardinalidad 1 a 1 en el sentido inverso)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#vendido_por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#vendido_por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
+        <rdfs:comment>Cardinalidad de 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#calidad -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#calidad">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>La calidad de un producto podrá ser alta, buena, media o baja.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#ciudad_destino -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#ciudad_destino">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#comentario -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#comentario">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Se permitirá al usuario añadir un comentario para aclarar su puntuación.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#correo -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#correo">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#descripcion -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#descripcion">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#direccion -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#direccion">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:comment>Hace referencia a la dirección de entrega del pedido.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#fecha_compra -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#fecha_compra">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#fecha_dev -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#fecha_dev">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#id -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#id">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#marca -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#marca">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#modelo -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#modelo">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#n_ref -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#n_ref">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#nombre -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#nombre">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Empresa_de_transporte"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#peso -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#peso">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#precio -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#precio">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#precio_max -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#precio_max">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#precio_min -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#precio_min">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#prioridad -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#prioridad">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:range>
+            <rdfs:Datatype>
+                <owl:oneOf>
+                    <rdf:Description>
+                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                        <rdf:first>cuando llegue</rdf:first>
+                        <rdf:rest>
+                            <rdf:Description>
+                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                <rdf:first>de 3 a 5 dias</rdf:first>
+                                <rdf:rest>
+                                    <rdf:Description>
+                                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                        <rdf:first>en un dia</rdf:first>
+                                        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                                    </rdf:Description>
+                                </rdf:rest>
+                            </rdf:Description>
+                        </rdf:rest>
+                    </rdf:Description>
+                </owl:oneOf>
+            </rdfs:Datatype>
+        </rdfs:range>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#puntuacion -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#puntuacion">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
+        <rdfs:range>
+            <rdfs:Datatype>
+                <owl:oneOf>
+                    <rdf:Description>
+                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</rdf:first>
+                        <rdf:rest>
+                            <rdf:Description>
+                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2</rdf:first>
+                                <rdf:rest>
+                                    <rdf:Description>
+                                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3</rdf:first>
+                                        <rdf:rest>
+                                            <rdf:Description>
+                                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4</rdf:first>
+                                                <rdf:rest>
+                                                    <rdf:Description>
+                                                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5</rdf:first>
+                                                        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                                                    </rdf:Description>
+                                                </rdf:rest>
+                                            </rdf:Description>
+                                        </rdf:rest>
+                                    </rdf:Description>
+                                </rdf:rest>
+                            </rdf:Description>
+                        </rdf:rest>
+                    </rdf:Description>
+                </owl:oneOf>
+            </rdfs:Datatype>
+        </rdfs:range>
+        <rdfs:comment>La puntuación de una valoración será un número del 1 al 5, en función de la satisfacción de un usuario con el producto valorado.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#volumen -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#volumen">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Accion -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Accion">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Comunicacion"/>
+        <rdfs:comment>Corresponde a las acciones del sistema</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consulta"/>
+        <rdfs:comment>Agente Evaluador</rdfs:comment>
+        <rdfs:comment>Representa la accion que hace el usuario de buscar productos a traves de unas restricciones</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Catalogo -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Catalogo">
+        <rdfs:comment>Agente Evaluador</rdfs:comment>
+        <rdfs:comment>Contiene un producto por numero de referencia distinto existente en nuestro sistema</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico">
+        <rdfs:comment>Agente Cliente</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Compra -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Compra">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Accion"/>
+        <rdfs:comment>Agente Cliente</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Comunicacion -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Comunicacion">
+        <rdfs:comment>Incluye las acciones y los mensajes que se llevan a cabo en nuestro sistema</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consulta -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consulta">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Comunicacion"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Defecto -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Defecto">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Motivo"/>
+        <rdfs:comment>El producto es defectuoso</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Accion"/>
+        <rdfs:comment>Agente Cliente</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Empresa_de_transporte -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Empresa_de_transporte">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Entidad"/>
+        <rdfs:comment>Agente Centro Logistico</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Entidad -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Entidad"/>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Equivocacion -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Equivocacion">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Motivo"/>
+        <rdfs:comment>Ha llegado otro producto diferente al que se habia comprado</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Externo -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Externo">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
+        <rdfs:comment>Hace referencia  a las tiendas externas que venden sus productos en nuestra tienda</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote">
+        <rdfs:comment>Agente Centro Logistico</rdfs:comment>
+        <rdfs:comment>Un lote es un conjunto de productos que no tienen porque pertenecer al mismo pedido</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Motivo -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Motivo">
+        <rdfs:comment>Agente Cliente</rdfs:comment>
+        <rdfs:comment>Indica el motivo de la causa de la devolucion</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#No_satisfaccion -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#No_satisfaccion">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Motivo"/>
+        <rdfs:comment>No cumple las expectativas del cliente</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido">
+        <rdfs:comment>Ag Cliente 
+Ag Centro Logistico</rdfs:comment>
+        <rdfs:comment>El pedido es un conjunto de productos que van a ser comprados por un usuario</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto">
+        <rdfs:comment>Agente Evaluador, Agente Cliente y Agente Centro Logistico</rdfs:comment>
+        <rdfs:comment>Por producto entendemos cada una de las unidades que tenemos disponibles. Un producto se identifica por su id, ya que varios productos pueden tener el mismo numero de referencia</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Propia_tienda -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Propia_tienda">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Entidad"/>
+        <rdfs:comment>Es el vendedor de un producto</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Recomendacion -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Recomendacion">
+        <rdfs:comment>Agente Evaluador</rdfs:comment>
+        <rdfs:comment>Hace referencia a la recomendacion de ciertos productos que se recibe periodicamente</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Entidad"/>
+        <rdfs:comment>Agente Cliente</rdfs:comment>
+        <rdfs:comment>Es la persona interesada en hacer una busqueda, comprar, devolver, valorar o obtener una recomendacion</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Accion"/>
+        <rdfs:comment>Ag Evaluador</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Vendedor -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Vendedor">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Entidad"/>
+        <rdfs:comment>Ag Cliente</rdfs:comment>
+        <rdfs:comment>Representa el encarregado de llevar a cabo las acciones relacionas con la compra de un pedido</rdfs:comment>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consola -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consola">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <modelo>Nintendo</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">234</n_ref>
+        <nombre>Consola</nombre>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consola2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consola2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <modelo>Nintendo</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">234</n_ref>
+        <nombre>Consola</nombre>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Patata -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Patata">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <modelo>Frita</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1111</n_ref>
+        <nombre>Patati</nombre>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Patinete -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Patinete">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <modelo>Casio</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5678</n_ref>
+        <nombre>Patinete</nombre>
+    </owl:NamedIndividual>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.2.8.20170104-2310) https://github.com/owlcs/owlapi -->
+

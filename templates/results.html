@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<ul>
+{% for product in products %}
+    <li>{{product["modelo"]}} | {{product["n_ref"]}} | {{product["nombre"]}}</li>
+{% endfor %}
+</ul>
+</body>
+</html>

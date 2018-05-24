@@ -9,8 +9,8 @@ from __future__ import print_function
 from multiprocessing import Process, Queue
 import socket
 
-from rdflib import Namespace, Graph
-from flask import Flask
+from rdflib import Namespace, Graph, RDF
+from flask import Flask, request, render_template
 
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -23,9 +23,9 @@ __author__ = 'Swaggaaa'
 
 # Configuration stuff
 hostname = socket.gethostname()
-port = 9010
+port = 9020
 
-agn = Namespace("http://www.agentes.org#")
+agn = Namespace("http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#")
 
 # Contador de mensajes
 mss_cnt = 0
@@ -33,10 +33,10 @@ mss_cnt = 0
 # Datos del Agente
 
 # Agent(name, uri, address, stop)
-AgenteBuscador = Agent('AgenteBuscador',
-                      agn.AgenteBuscador,
-                      'http://%s:%d/comm' % (hostname, port),
-                      'http://%s:%d/Stop' % (hostname, port))
+AgenteEvaluador = Agent('AgenteEvaluador',
+                        agn.AgenteEvaluador,
+                        'http://%s:%d/comm' % (hostname, port),
+                        'http://%s:%d/Stop' % (hostname, port))
 
 # Global triplestore graph
 dsgraph = Graph()
@@ -47,6 +47,30 @@ cola1 = Queue()
 
 # Flask stuff
 app = Flask(__name__)
+
+
+@app.route("/search", methods=['GET', 'POST'])
+def browser_search():
+    global dsgraph
+    if request.method == 'GET':
+        return render_template("search.html")
+    else:
+        search_content = request.form["search"]
+        res = dsgraph.query("""
+                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                        
+                            SELECT ?n_ref ?nombre ?modelo
+                            WHERE 
+                            {
+                                ?Producto rdf:type ab:Producto.
+                                ?Producto ab:n_ref ?n_ref.
+                                ?Producto ab:nombre ?nombre.
+                                ?Producto ab:modelo ?modelo.
+                                FILTER regex(str(?n_ref), "^%s$")
+                            }
+                            """ % search_content, initNs={'ab': agn})
+
+        return render_template("results.html", products=res)
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
@@ -73,12 +97,9 @@ def tidyup():
 
 # Esta función se ejecuta en bucle (a no ser que lo cambiéis) y es el comportamiento inicial del agente. Aquí podéis
 # mandar mensajes a los demás o hacer el trabajo que no requiera la petición de un agente
-def agentbehavior1():
+def agentbehavior1(cola):
+    graph = cola.get()
     while True:
-        global dsgraph
-        for s, p, o in dsgraph:
-            logger.info((s, p, o))
-        logger.info("still alive")
         time.sleep(1)
         pass
 
@@ -87,12 +108,14 @@ def agentbehavior1():
 
 if __name__ == '__main__':
     # Inicializo el grafo de ejemplo
-    #dsgraph.parse("ejemplo.rdf");
+    dsgraph.parse("Ontology.owl")
+    cola1.put(dsgraph)
 
-    logger.info("initialize")
+    # Debug
+    print(dsgraph.serialize(format='turtle'))
 
-    # Ponemos en marcha los behaviors
-    ab1 = Process(target=agentbehavior1)
+    # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
+    ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()
 
     # Ponemos en marcha el servidor
