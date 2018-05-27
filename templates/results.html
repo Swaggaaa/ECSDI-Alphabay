@@ -5,8 +5,8 @@
 </head>
 <body>
 <ul>
-{% for product in products %}
-    <li>{{product["modelo"]}} | {{product["n_ref"]}} | {{product["nombre"]}}</li>
+{% for product in products["results"]["bindings"] %}
+    <li>{{product["modelo"]["value"]}} | {{product["n_ref"]["value"]}} | {{product["nombre"]["value"]}}</li>
 {% endfor %}
 </ul>
 </body>

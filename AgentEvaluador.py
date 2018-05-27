@@ -9,8 +9,11 @@ from __future__ import print_function
 from multiprocessing import Process, Queue
 import socket
 
-from rdflib import Namespace, Graph, RDF
+from rdflib import Namespace, Graph, RDF, URIRef
+from rdflib.namespace import RDF, SKOS
+from rdflib.plugins.stores import sparqlstore
 from flask import Flask, request, render_template
+from SPARQLWrapper import SPARQLWrapper, JSON
 
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -41,6 +44,10 @@ AgenteEvaluador = Agent('AgenteEvaluador',
 # Global triplestore graph
 dsgraph = Graph()
 
+endpoint = 'http://localhost:5820/myDB/query'
+sparql = SPARQLWrapper(endpoint)
+
+
 logger = config_logger(level=1)
 
 cola1 = Queue()
@@ -56,19 +63,19 @@ def browser_search():
         return render_template("search.html")
     else:
         search_content = request.form["search"]
-        res = dsgraph.query("""
-                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
-                        
-                            SELECT ?n_ref ?nombre ?modelo
-                            WHERE 
-                            {
-                                ?Producto rdf:type ab:Producto.
-                                ?Producto ab:n_ref ?n_ref.
-                                ?Producto ab:nombre ?nombre.
-                                ?Producto ab:modelo ?modelo.
-                                FILTER regex(str(?n_ref), "^%s$")
-                            }
-                            """ % search_content, initNs={'ab': agn})
+        sparql.setQuery("""
+                               prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+
+                              SELECT ?n_ref ?nombre ?modelo
+                              WHERE 
+                              {
+                                  ?Producto rdf:type ab:Producto.
+                                  ?Producto ab:n_ref ?n_ref.
+                                  ?Producto ab:nombre ?nombre.
+                                  ?Producto ab:modelo ?modelo.
+                                  FILTER regex(str(?n_ref), "^%s$").
+                              }""" % search_content)
+        res = sparql.query().convert()
 
         return render_template("results.html", products=res)
 
@@ -107,12 +114,9 @@ def agentbehavior1(cola):
 
 
 if __name__ == '__main__':
-    # Inicializo el grafo de ejemplo
-    dsgraph.parse("Ontology.owl")
-    cola1.put(dsgraph)
-
-    # Debug
-    print(dsgraph.serialize(format='turtle'))
+    # Nos conectamos al StarDog
+    sparql.setCredentials(user='admin', passwd='admin')
+    sparql.setReturnFormat(JSON)
 
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=agentbehavior1, args=(cola1,))
