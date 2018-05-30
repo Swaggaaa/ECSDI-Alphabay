@@ -65,7 +65,7 @@ def browser_search():
         query = """
                prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
-              SELECT ?n_ref ?nombre ?modelo ?calidad ?precio
+              SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_modelo) (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio) (COUNT(*) AS ?disponibilidad)
               WHERE 
               {
                   ?Producto ab:n_ref ?n_ref.
@@ -87,7 +87,7 @@ def browser_search():
         if request.form["maxprecio"] != "":
             query += "FILTER (?precio <= %s)." % request.form["maxprecio"]
 
-        query += "}"
+        query += "} GROUP BY ?n_ref"
 
         sparql.setQuery(query)
         res = sparql.query().convert()
