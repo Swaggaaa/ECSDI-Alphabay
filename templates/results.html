@@ -1,13 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Search Results</title>
+<style>
+table, th, td {
+    border: 1px solid black;
+    padding: 5px;
+}
+table {
+    border-spacing: 15px;
+}
+</style>
 </head>
 <body>
-<ul>
-{% for product in products["results"]["bindings"] %}
-    <li>{{product["modelo"]["value"]}} | {{product["n_ref"]["value"]}} | {{product["nombre"]["value"]}}</li>
-{% endfor %}
-</ul>
+<form method="post" action="">
+<table style="width:100%">
+    <tr>
+        <th></th><th>Ref. Number</th> <th>Name</th> <th>Model</th> <th>Quality</th> <th>Price</th>
+    </tr>
+        {% for product in products["results"]["bindings"] %}
+            <tr>
+                <td><input type="checkbox" name="items" value="{{product['n_ref']['value']}}"/></td>
+                <td>{{product["n_ref"]["value"]}}</td>
+                <td>{{product["nombre"]["value"]}}</td>
+                <td>{{product["modelo"]["value"]}}</td>
+                <td>{{product["calidad"]["value"]}}</td>
+                <td>{{product["precio"]["value"]}}</td>
+            </tr>
+        {% endfor %}
+    </tr>
+</table>
+</form>
 </body>
 </html>

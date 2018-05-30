@@ -62,19 +62,34 @@ def browser_search():
     if request.method == 'GET':
         return render_template("search.html")
     else:
-        search_content = request.form["search"]
-        sparql.setQuery("""
-                               prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+        query = """
+               prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
-                              SELECT ?n_ref ?nombre ?modelo
-                              WHERE 
-                              {
-                                  ?Producto rdf:type ab:Producto.
-                                  ?Producto ab:n_ref ?n_ref.
-                                  ?Producto ab:nombre ?nombre.
-                                  ?Producto ab:modelo ?modelo.
-                                  FILTER regex(str(?n_ref), "^%s$").
-                              }""" % search_content)
+              SELECT ?n_ref ?nombre ?modelo ?calidad ?precio
+              WHERE 
+              {
+                  ?Producto ab:n_ref ?n_ref.
+                  ?Producto ab:nombre ?nombre.
+                  ?Producto ab:modelo ?modelo.
+                  ?Producto ab:calidad ?calidad.
+                  ?Producto ab:precio ?precio.
+              """
+        if request.form["n_ref"] != "":
+            query += "FILTER regex(str(?n_ref), '^%s$')." % request.form["nref"]
+        if request.form["nombre"] != "":
+            query += "FILTER regex(str(?n_ref), '%s')." % request.form["nombre"]
+        if request.form["modelo"] != "":
+            query += "FILTER regex(str(?n_ref), '%s')." % request.form["modelo"]
+        if request.form["calidad"] != "Any":
+            query += "FILTER regex(str(?calidad), '^%s$')." % request.form["calidad"]
+        if request.form["minprecio"] != "":
+            query += "FILTER (?precio >= %s)." % request.form["minprecio"]
+        if request.form["maxprecio"] != "":
+            query += "FILTER (?precio <= %s)." % request.form["maxprecio"]
+
+        query += "}"
+
+        sparql.setQuery(query)
         res = sparql.query().convert()
 
         return render_template("results.html", products=res)

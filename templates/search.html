@@ -1,11 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Welcome to Alphabay!</title>
 </head>
 <body>
+<h1>Search items</h1>
 <form method="post" action="">
-        <p><label>Item to search:</label> <textarea name="search"></textarea></p>
+        <p><label>Name:</label> <input type="text" name="nombre"></p>
+        <p><label>Model:</label> <input type="text" name="modelo"></p>
+        <p><label>Num Ref:</label> <input type="text" name="n_ref"></p>
+        <p><label>Quality:</label> <select name="calidad">
+            <option value="Any">Any</option>
+            <option value="Good">Good</option>
+            <option value="Average">Average</option>
+            <option value="Acceptable">Acceptable</option>
+            </select></p>
+        <p><label></label></p>
+        <p><label>Min. Price:</label> <input type="number" name="minprecio" min="0"> <label>Max. Price:</label> <input type="number" name="maxprecio" min="0"></p>
         <p><button type="submit">Send</button></p>
     </form>
 </body>
