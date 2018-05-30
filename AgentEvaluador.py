@@ -77,9 +77,9 @@ def browser_search():
         if request.form["n_ref"] != "":
             query += "FILTER regex(str(?n_ref), '^%s$')." % request.form["nref"]
         if request.form["nombre"] != "":
-            query += "FILTER regex(str(?n_ref), '%s')." % request.form["nombre"]
+            query += "FILTER regex(str(?nombre), '%s')." % request.form["nombre"]
         if request.form["modelo"] != "":
-            query += "FILTER regex(str(?n_ref), '%s')." % request.form["modelo"]
+            query += "FILTER regex(str(?modelo), '%s')." % request.form["modelo"]
         if request.form["calidad"] != "Any":
             query += "FILTER regex(str(?calidad), '^%s$')." % request.form["calidad"]
         if request.form["minprecio"] != "":
