@@ -92,6 +92,7 @@ def browser_search():
         sparql.setQuery(query)
         res = sparql.query().convert()
 
+
         return render_template("results.html", products=res)
 
 
