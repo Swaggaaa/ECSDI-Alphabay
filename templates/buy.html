@@ -1,17 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add your information!</title>
+    <title>Buy products</title>
+    <style>
+    table, th, td {
+        border: 1px solid black;
+        padding: 5px;
+    }
+    table {
+        border-spacing: 15px;
+    }
+    </style>
 </head>
 <body>
-<form method="post" action="">
+<table style="width:100%">
+    <tr>
+        <th>Ref. Number</th> <th>Name</th> <th>Model</th> <th>Quality</th> <th>Price</th>
+    </tr>
+        {% set total_price = namespace(a=0.0) %}
+        {% for product in products["results"]["bindings"] %}
+            <tr>
+                <td>{{product["n_ref"]["value"]}}</td>
+                <td>{{product["n_ref_nombre"]["value"]}}</td>
+                <td>{{product["n_ref_modelo"]["value"]}}</td>
+                <td>{{product["n_ref_calidad"]["value"]}}</td>
+                <td>{{product["n_ref_precio"]["value"]}}</td>
+                {% set total_price.a = total_price.a + (product["n_ref_precio"]["value"]|float) %}
+            </tr>
+        {% endfor %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>{{ total_price.a }}</td>
+        </tr>
+</table>
+<form method="post" action="/purchase">
+        {% for product in products["results"]["bindings"] %}
+        <input type="hidden" name="items" value="{{ product["n_ref"]["value"] }}">
+        {% endfor %}
         <p><label>Name:</label> <input type="text" name="nombre"></p>
         <p><label>Email:</label> <input type="text" name="email"></p>
-        <p><label>Direction:</label> <input type="text" name="direction"></p>
-        <p><label>Priority:</label> <select name="priority">
-            <option value="Economic">Standard</option>
-            <option value="Standard">Fast</option>
-            <option value="Express">Express</option>
+        <p><label>Address:</label> <input type="text" name="direccion"></p>
+        <p><label>Priority:</label> <select name="prioridad">
+            <option value="economic">Economic</option>
+            <option value="standard">Standard</option>
+            <option value="express">Express</option>
             </select></p>
         <p><label></label></p>
         <p><button type="submit">Send</button></p>
