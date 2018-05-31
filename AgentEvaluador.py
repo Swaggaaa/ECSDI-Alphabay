@@ -10,10 +10,8 @@ from multiprocessing import Process, Queue
 import socket
 
 from rdflib import Namespace, Graph, RDF, URIRef
-from rdflib.namespace import RDF, SKOS
-from rdflib.plugins.stores import sparqlstore
 from flask import Flask, request, render_template
-from SPARQLWrapper import SPARQLWrapper, JSON
+import SPARQLWrapper
 
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -45,7 +43,7 @@ AgenteEvaluador = Agent('AgenteEvaluador',
 dsgraph = Graph()
 
 endpoint = 'http://localhost:5820/myDB/query'
-sparql = SPARQLWrapper(endpoint)
+sparql = SPARQLWrapper.SPARQLWrapper(endpoint)
 
 
 logger = config_logger(level=1)
@@ -75,7 +73,7 @@ def browser_search():
                   ?Producto ab:precio ?precio.
               """
         if request.form["n_ref"] != "":
-            query += "FILTER regex(str(?n_ref), '^%s$')." % request.form["nref"]
+            query += "FILTER regex(str(?n_ref), '^%s$')." % request.form["n_ref"]
         if request.form["nombre"] != "":
             query += "FILTER regex(str(?nombre), '%s')." % request.form["nombre"]
         if request.form["modelo"] != "":
@@ -92,6 +90,10 @@ def browser_search():
         sparql.setQuery(query)
         res = sparql.query().convert()
 
+        try:
+            res["results"]["bindings"][0]["n_ref"]
+        except KeyError:
+            del res["results"]["bindings"][0]
 
         return render_template("results.html", products=res)
 
@@ -132,7 +134,7 @@ def agentbehavior1(cola):
 if __name__ == '__main__':
     # Nos conectamos al StarDog
     sparql.setCredentials(user='admin', passwd='admin')
-    sparql.setReturnFormat(JSON)
+    sparql.setReturnFormat(SPARQLWrapper.JSON)
 
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=agentbehavior1, args=(cola1,))
