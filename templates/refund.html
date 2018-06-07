@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your products</title>
+<style>
+table, th, td {
+    border: 1px solid black;
+    padding: 5px;
+}
+table {
+    border-spacing: 15px;
+}
+</style>
+</head>
+<body>
+<form method="post" action="{{ "http://" ~ host_vendedor ~ "/refund" }}">
+<table style="width:100%">
+    <tr>
+        <th></th><th>Ref. Number</th> <th>Name</th> <th>Model</th> <th>Quantity</th> <th>Price</th>
+    </tr>
+        {% for product in products["results"]["bindings"] %}
+            <tr>
+                <td><input type="radio" name="items" value="{{product['n_ref']['value']}}"/></td>
+                <td>{{product["n_ref"]["value"]}}</td>
+                <td>{{product["n_ref_nombre"]["value"]}}</td>
+                <td>{{product["n_ref_modelo"]["value"]}}</td>
+                <td>{{product["cantidad"]["value"]}}</td>
+                <td>{{product["n_ref_precio"]["value"]}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <p><label>Reason:</label> <select name="motivo">
+        <option value="Defective">Defective</option>
+        <option value="Equivocation">Equivocation</option>
+        <option value="Not satisfied">Not satisfied</option>
+        </select></p>
+    <p><label></label></p>
+    <p><button type="submit">Refund</button></p>
+</form>
+
+</body>
+</html>
