@@ -46,28 +46,58 @@ def browser_search():
     if request.method == 'GET':
         return render_template('addProduct.html')
     else:
-
         query = """
         
           prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
-          INSERT
-          {
-              ?Producto ab:n_ref ?n_ref.
-              ?Producto ab:nombre ?nombre.
-              ?Producto ab:descripcion ?descripcion.
-              ?Producto ab:modelo ?modelo.
-              ?Producto ab:precio ?precio.
-              ?Producto ab:peso ?peso.
-              ?Producto ab:precio ?precio.
+          
+          SELECT (MAX(?id) as ?maxid)
+          WHERE{
+                ?Producto ab:id ?id.
+          }
+                                       
             """
+
+        sparql.setQuery(query)
+        res = sparql.query().convert()
+
+        try:
+            res["results"]["bindings"][0]["maxid"]["value"]
+        except KeyError:
+            del res["results"]["bindings"][0]
 
         if request.form["cantidad"] != "":
             for x in range(0, int(request.form["cantidad"])):
-                query += "?Producto ab:id ?" + str(x)
+                id = int(res["results"]["bindings"][0]["maxid"]["value"]) + x + 1
+                query = """
+                       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+
+                        INSERT DATA
+                        {
+                            ab:Producto%(productoid)s rdf:type ab:Producto .
+                            ab:Producto%(productoid)s ab:id %(id)d .
+                            ab:Producto%(productoid)s ab:modelo %(modelo)s .
+                            ab:Producto%(productoid)s ab:nombre %(nombre)s .
+                            ab:Producto%(productoid)s ab:precio %(precio)d .
+                            ab:Producto%(productoid)s ab:descripcion %(descripcion)s .
+                            ab:Producto%(productoid)s ab:marca %(marca)s .
+                            ab:Producto%(productoid)s ab:n_ref %(n_ref)d .
+                            ab:Producto%(productoid)s ab:peso %(peso)f .
+                            ab:Producto%(productoid)s ab:vendido_por %(vendido_por)s .
+                            ab:Producto%(productoid)s ab:calidad %(calidad)s .
+                            }
+                            """ % {'productoid': id,
+                                   'id': id, 'modelo': '"' + request.form["modelo"] + '"',
+                                   'nombre': '"' + request.form["nombre"] + '"', 'precio': int(request.form["precio"]),
+                                   'descripcion': '"' + request.form["descripcion"] + '"',
+                                   'marca': '"' + request.form["marca"] + '"', 'n_ref': int(request.form["n_ref"]),
+                                   'peso': float(request.form["peso"]), 'vendido_por': '"' + request.form["vendido_por"] + '"',
+                                   'calidad': '"' + request.form["calidad"] + '"'}
+
+                print("ESTA ES LA QUERY " + query)
                 sparql.setQuery(query)
                 sparql.query()
 
-    return render_template("search.html")
+        return render_template("search.html")
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
