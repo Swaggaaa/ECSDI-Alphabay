@@ -76,7 +76,7 @@ def browser_purchase():
     gmess.bind('ab', AB)
     content = AB[AgentUtil.Agents.AgenteVendedor.name + '-preparar-pedido']
     gmess.add((content, RDF.type, AB.Pedido))
-    gmess.add((content, AB.id, Literal(123)))  # TODO: Hacer consulta para saber el ultimo id
+    gmess.add((content, AB.id, Literal(123)))
     gmess.add((content, AB.prioridad, Literal(request.form['prioridad'])))
     gmess.add((content, AB.fecha_compra, Literal(time.strftime("%d/%m/%Y"))))
     gmess.add((content, AB.direccion, Literal(request.form['direccion'])))
@@ -89,6 +89,54 @@ def browser_purchase():
                         msgcnt=mss_cnt)
     send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
     mss_cnt += 1
+
+
+@app.route("/refund", methods=['GET', 'POST'])
+def browser_refund():
+    global dsgraph
+    if request.method == 'GET':
+        query = """
+                           prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+
+                          SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) 
+                                        (SAMPLE(?modelo) AS ?n_ref_modelo) 
+                                        (SAMPLE(?precio) AS ?n_ref_precio) 
+                                        (COUNT(*) AS ?cantidad)
+                          WHERE 
+                          {
+                              ?Producto ab:n_ref ?n_ref.
+                              ?Producto ab:nombre ?nombre.
+                              ?Producto ab:modelo ?modelo.
+                              ?Producto ab:precio ?precio.
+                              ?Producto ab:comprado_por ?comprado_por.
+                          """
+        #TODO: Cambiar Elena por el nombre de usuario
+        query += "FILTER regex (str(?comprado_por), 'Elena')."
+        query += "} GROUP BY ?n_ref"
+
+        sparql.setQuery(query)
+        res = sparql.query().convert()
+
+        try:
+            res["results"]["bindings"][0]["n_ref"]
+        except KeyError:
+            del res["results"]["bindings"][0]
+
+        return render_template("refund.html", products=res, host_vendedor=(
+                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
+
+    else:
+        if request.form["motivo"] != 'Not satisfied':
+            return render_template("resolution.html", resolution="Your request have been accepted", host_vendedor=(
+                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+            ))
+
+
+
+
+
+
+
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
