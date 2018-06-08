@@ -10,7 +10,7 @@ from multiprocessing import Process, Queue
 import socket
 
 from rdflib import Namespace, Graph, RDF, URIRef
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, make_response
 import SPARQLWrapper
 
 from AgentUtil.FlaskServer import shutdown_server
@@ -33,13 +33,24 @@ dsgraph = Graph()
 
 sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
 
-
 logger = config_logger(level=1)
 
 cola1 = Queue()
 
 # Flask stuff
 app = Flask(__name__)
+
+
+# Esto en verdad no es de este agente, pero lo ponemos aqui para poder tener el indice de paginas en algun lado
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    global dsgraph
+    if request.method == 'GET':
+        return render_template("login.html")
+    else:
+        resp = make_response(render_template("index.html"))
+        resp.set_cookie('username', request.form['user'])
+        return resp
 
 
 @app.route("/search", methods=['GET', 'POST'])
@@ -51,9 +62,13 @@ def browser_search():
         query = """
                prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
-              SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_modelo) (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio) (COUNT(*) AS ?disponibilidad)
+              SELECT ?n_ref (SAMPLE(?id) AS ?n_ref_id) (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS 
+              ?n_ref_modelo) (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio)
+              (COUNT(*) AS ?disponibilidad)
+              
               WHERE 
               {
+                  ?Producto ab:id ?id.
                   ?Producto ab:n_ref ?n_ref.
                   ?Producto ab:nombre ?nombre.
                   ?Producto ab:modelo ?modelo.
@@ -84,7 +99,7 @@ def browser_search():
             del res["results"]["bindings"][0]
 
         return render_template("results.html", products=res, host_vendedor=(
-                    AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
+                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
