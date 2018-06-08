@@ -57,6 +57,9 @@ num_respuestas = 0
 # Mejor oferta hasta ahora
 best_offer = None
 
+# Lotes en proceso de envío
+lotes_enviando = []
+
 
 @app.route("/buy", methods=['POST'])
 def browser_search():
@@ -229,6 +232,7 @@ def comunicacion():
 
 
 def enviar_lotes(prioridad):
+    global lotes_enviando
     # Obtenemos los lotes con la prioridad demandada
     query = """
             prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -272,7 +276,11 @@ def enviar_lotes(prioridad):
          }
         """ % filterSPARQLValues("?id", ids, False)
 
+        # Limpiamos los lotes con los nuevos a enviar
+        lotes_enviando = []
+
         for lote in lotes:
+            lotes_enviando.append(lote)
             solicita_oferta(lote)
 
         # Eliminamos los lotes (es decir, los enviamos)
@@ -409,6 +417,8 @@ def aceptar_oferta(transportista):
 
 
 def notificar_clientes():
+    for lote in lotes_enviando:
+
     pass
 
 
