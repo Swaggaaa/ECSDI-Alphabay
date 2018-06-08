@@ -27,6 +27,7 @@ import time
 
 from AgentUtil.OntoNamespaces import ACL, AB
 from AgentUtil.SPARQLHelper import filterSPARQLValues
+from models.Producto import Producto
 
 __author__ = 'Swaggaaa'
 
@@ -108,7 +109,12 @@ def comunicacion():
         else:
             if 'content' in msgdic:
                 content = msgdic['content']
-                producto = gm.value(subject=content, predicate=RDF.type) # TODO: Get the proper values, not just the type!!
+                producto = Producto()
+                producto.id = gm.value(subject=content, predicate=AB.id)
+                producto.prioridad = gm.value(subject=content, predicate=AB.prioridad)
+                producto.fecha_compra = gm.value(subject=content, predicate=AB.direccion)
+                producto.compuesto_por = gm.value(subject=content, predicate=AB.compuesto_por)
+
                 prepare_shipping(producto)
 
             gr = build_message(Graph(),

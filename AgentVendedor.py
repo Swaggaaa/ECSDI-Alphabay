@@ -76,7 +76,7 @@ def browser_purchase():
     gmess.bind('ab', AB)
     content = AB[AgentUtil.Agents.AgenteVendedor.name + '-preparar-pedido']
     gmess.add((content, RDF.type, AB.Pedido))
-    gmess.add((content, AB.id, Literal(123)))  # TODO: Hacer consulta para saber el ultimo id
+    gmess.add((content, AB.id, Literal(123)))
     gmess.add((content, AB.prioridad, Literal(request.form['prioridad'])))
     gmess.add((content, AB.fecha_compra, Literal(time.strftime("%d/%m/%Y"))))
     gmess.add((content, AB.direccion, Literal(request.form['direccion'])))
