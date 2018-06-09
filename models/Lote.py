@@ -4,3 +4,4 @@ class Lote(object):
     volumen = 0.0
     ciudad_destino = ""
     prioridad = ""
+    transportista = ""
