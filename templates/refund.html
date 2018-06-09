@@ -17,7 +17,7 @@ table {
 <form method="post" action="{{ "http://" ~ host_vendedor ~ "/refund" }}">
 <table style="width:100%">
     <tr>
-        <th></th><th>Ref. Number</th> <th>Name</th> <th>Model</th> <th>Price</th>
+        <th></th><th>Id</th> <th>Ref.Number</th> <th>Name</th> <th>Model</th> <th>Price</th>
     </tr>
         {% for product in products["results"]["bindings"] %}
             <tr>

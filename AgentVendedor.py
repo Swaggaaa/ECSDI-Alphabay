@@ -275,14 +275,7 @@ def browser_refund():
 
     else:
         if request.form["motivo"] != 'Not satisfied':
-            query = """
-                 prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
-                 
-                        DELETE {?Producto ab:comprado_por '%s'}
-                        WHERE {?Producto ab:id request.form['item']}  """ % session['username']
-
-            # res = AgentUtil.SPARQLHelper.read_query(query)
-
+            eliminar_producto_del_pediod()
             return render_template("resolution.html",
                                    resolution="Your request has been accepted. The transport company in charge of the devolution is %s" % escoger_transportista(),
                                    host_vendedor=(
@@ -310,6 +303,7 @@ def browser_refund():
             dias_pasados = fecha_actual - fecha_entrega
 
             if dias_pasados.days <= 15:
+                eliminar_producto_del_pediod()
                 return render_template("resolution.html",
                                        resolution="Your request has been accepted. The transport company in charge of the devoution is %s" % escoger_transportista(),
                                        host_vendedor=(
@@ -336,6 +330,15 @@ def escoger_transportista():
     transportista = res["results"]["bindings"][i-1]["transportista"]["value"]
     return transportista
 
+def eliminar_producto_del_pediod():
+    query = """
+                     prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+
+                           DELETE {?Pedido ab:compuesto_por %s }
+    					    WHERE {?Pedido ab:compuesto_por ?compuesto_por .
+                                    ?Pedido ab:id ?id}""" % request.form['item']
+
+    AgentUtil.SPARQLHelper.update_query(query)
 
 # Para parar el agente. Por ahora no lo necesitaremos ya que se supone que están activos 24/7 skrra
 @app.route("/Stop")
