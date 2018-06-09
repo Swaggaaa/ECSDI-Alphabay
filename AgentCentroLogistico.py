@@ -419,7 +419,7 @@ def aceptar_oferta(transportista):
 def notificar_clientes():
     for lote in lotes_enviando:
 
-    pass
+        pass
 
 
 # Para parar el agente. Por ahora no lo necesitaremos ya que se supone que están activos 24/7 skrra

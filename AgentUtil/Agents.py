@@ -10,9 +10,12 @@ VENDEDOR_PORT = 9030
 CENTROLOG_PORT = 9040
 TRANSPORTISTA_PORT = 9050
 TRANSPORTISTA2_PORT = 9051
+REPRESENTANTE_PORT = 9060
 
 hostname = socket.gethostname()
 endpoint = 'http://localhost:5820/myDB/query'
+endpoint2 = 'http://localhost:5820/myDB/update'
+
 
 AgenteEvaluador = Agent('AgenteEvaluador',
                         AB.AgentEvaluador,
@@ -38,3 +41,8 @@ AgenteTransportista2 = Agent('AgenteTransportista',
                              AB.AgenteTransportista2,
                              'http://%s:%d/comm' % (hostname, TRANSPORTISTA2_PORT),
                              'http://%s:%d/Stop' % (hostname, TRANSPORTISTA2_PORT))
+
+AgenteRepresentante = Agent('AgenteRepresentante',
+                            AB.AgenteRepresentante,
+                            'http://%s:%d/comm' % (hostname, REPRESENTANTE_PORT),
+                            'http://%s:%d/Stop' % (hostname, REPRESENTANTE_PORT))

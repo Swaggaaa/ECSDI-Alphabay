@@ -41,11 +41,25 @@
     
 
 
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#comprado_por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#comprado_por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario"/>
+    </owl:ObjectProperty>
+    
+
+
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#compuesto_por -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#compuesto_por">
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#n_ref"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2002/07/owl#rational"/>
+            </owl:Restriction>
+        </rdfs:range>
         <rdfs:comment>Cardinalidad de 1 a N en sentido dominio a rango (1 a 1 en sentido contrario)</rdfs:comment>
     </owl:ObjectProperty>
     
@@ -144,9 +158,13 @@
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#formado_por -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#formado_por">
-        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
-        <rdfs:comment>Cardinalidad de 1 a N en sentido dominio a rango (1  a 1 en sentido contrario)</rdfs:comment>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#id"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2002/07/owl#rational"/>
+            </owl:Restriction>
+        </rdfs:range>
     </owl:ObjectProperty>
     
 
@@ -200,6 +218,20 @@
         <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Compra"/>
         <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion"/>
         <rdfs:comment>Cardinalidad de 1 a N en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#realizado_por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#realizado_por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+        <rdfs:range>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#nombre"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2002/07/owl#rational"/>
+            </owl:Restriction>
+        </rdfs:range>
     </owl:ObjectProperty>
     
 
@@ -271,7 +303,38 @@
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#calidad">
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:range>
+            <rdfs:Datatype>
+                <owl:oneOf>
+                    <rdf:Description>
+                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                        <rdf:first>Acceptable</rdf:first>
+                        <rdf:rest>
+                            <rdf:Description>
+                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                <rdf:first>Average</rdf:first>
+                                <rdf:rest>
+                                    <rdf:Description>
+                                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                        <rdf:first>Good</rdf:first>
+                                        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                                    </rdf:Description>
+                                </rdf:rest>
+                            </rdf:Description>
+                        </rdf:rest>
+                    </rdf:Description>
+                </owl:oneOf>
+            </rdfs:Datatype>
+        </rdfs:range>
         <rdfs:comment>La calidad de un producto podrá ser alta, buena, media o baja.</rdfs:comment>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#ciudad -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#ciudad">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
     </owl:DatatypeProperty>
     
 
@@ -342,10 +405,19 @@
     
 
 
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#fecha_entrega -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#fecha_entrega">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
+    </owl:DatatypeProperty>
+    
+
+
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#id -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#id">
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Oferta"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#int"/>
@@ -356,6 +428,7 @@
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#marca -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#marca">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
@@ -386,6 +459,7 @@
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#nombre -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#nombre">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Empresa_de_transporte"/>
@@ -401,7 +475,16 @@
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#peso">
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#peso_total -->
+
+    <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#peso_total">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
     </owl:DatatypeProperty>
     
 
@@ -409,6 +492,7 @@
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#precio -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#precio">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Oferta"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
     </owl:DatatypeProperty>
@@ -436,6 +520,7 @@
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#prioridad -->
 
     <owl:DatatypeProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#prioridad">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Lote"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
         <rdfs:range>
             <rdfs:Datatype>
@@ -668,6 +753,12 @@
     
 
 
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Oferta -->
+
+    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Oferta"/>
+    
+
+
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido">
@@ -753,46 +844,203 @@ Ag Centro Logistico</rdfs:comment>
     
 
 
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consola -->
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Base -->
 
-    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consola">
-        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
-        <modelo>Nintendo</modelo>
-        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">234</n_ref>
-        <nombre>Consola</nombre>
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Base">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consola2 -->
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Camiseta_de_manga_corta_Nike -->
 
-    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consola2">
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Camiseta_de_manga_corta_Nike">
         <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
-        <modelo>Nintendo</modelo>
-        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">234</n_ref>
-        <nombre>Consola</nombre>
+        <vendido_por rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Base"/>
+        <calidad>Average</calidad>
+        <descripcion>The Dry-FIT technology that keeps you dry and cool all the day
+They have a regular fit that offers the right balance of freedom of movement
+They are equipped with a mesh-lined waistband with an internal draw cord allows individual adjustment
+They have a cut that goes just above the knees are made of moisture-wicking fabric, which ensures long-lasting comfort and freedom of movement on the pitch
+The Swoosh logo is noticeable on the left leg</descripcion>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0004</id>
+        <marca>Nike</marca>
+        <modelo>Children&apos;s Dri-Fit Academy Football Shorts</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1002</n_ref>
+        <nombre>T-shirt for boy</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0.4</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">14.99</precio>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Patata -->
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Elena -->
 
-    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Patata">
-        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
-        <modelo>Frita</modelo>
-        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1111</n_ref>
-        <nombre>Patati</nombre>
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Elena">
+        <nombre>Elena</nombre>
     </owl:NamedIndividual>
     
 
 
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Patinete -->
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Foot_Looker -->
 
-    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Patinete">
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Foot_Looker">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Sneakers_Nike -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Sneakers_Nike">
         <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
-        <modelo>Casio</modelo>
-        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5678</n_ref>
-        <nombre>Patinete</nombre>
+        <vendido_por rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Foot_Looker"/>
+        <calidad>Good</calidad>
+        <descripcion>Outer Material: Synthetic
+Inner Material: Synthetic
+Sole: Synthetic
+Closure: Lace-Up
+Heel Type: Flat</descripcion>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0007</id>
+        <marca>Nike</marca>
+        <modelo>COURT ROYALE SUEDE</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1004</n_ref>
+        <nombre>Men Sneakers</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">1.2</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">89.99</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Sneakers_Vans -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Sneakers_Vans">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <vendido_por rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Base"/>
+        <calidad>Acceptable</calidad>
+        <descripcion>Gum rubber sole
+Vulcanized sole for extra grip
+Outer Material: Canvas
+Inner Material: Textile
+Sole: Gum Rubber
+Closure: Lace-Up
+Heel Type: Flat</descripcion>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0008</id>
+        <marca>Vans</marca>
+        <modelo>Men Atwood Canvas Low-Top Sneakers</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1003</n_ref>
+        <nombre>Men Sneakers</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">69.99</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Camiseta_de_manga_corta_Levi&apos;s -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Camiseta_de_manga_corta_Levi&apos;s">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <vendido_por rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_store"/>
+        <calidad>Good</calidad>
+        <descripcion>Boy t-shirt, standard fit made, 100% cotton. More than a simple t-shirt with basic logo, this t-shirt symbolizes the classic american style. With an adjusted cup in a blend of supple cotton, our t-shirts are shaped with resistant sewings and topstitching strengthened to survive the test of time.</descripcion>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0001</id>
+        <marca>Levi&apos;s</marca>
+        <modelo>Short Sleeves Batwin T-Shirt</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1000</n_ref>
+        <nombre>T-shirt for boy</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0.4</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">19.99</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Camiseta_de_manga_corta_Levi&apos;s_2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Camiseta_de_manga_corta_Levi&apos;s_2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <vendido_por rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_store"/>
+        <calidad>Good</calidad>
+        <descripcion>Boy t-shirt, standard fit made, 100% cotton. More than a simple t-shirt with basic logo, this t-shirt symbolizes the classic american style. With an adjusted cup in a blend of supple cotton, our t-shirts are shaped with resistant sewings and topstitching strengthened to survive the test of time.</descripcion>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0002</id>
+        <marca>Levi&apos;s</marca>
+        <modelo>Short Sleeves Batwin T-Shirt</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1000</n_ref>
+        <nombre>T-shirt for boy</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0.4</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">19.99</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Camiseta_de_manga_corta_Levi&apos;s_3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Camiseta_de_manga_corta_Levi&apos;s_3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <vendido_por rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_store"/>
+        <calidad>Good</calidad>
+        <descripcion>Boy t-shirt, standard fit made, 100% cotton. More than a simple t-shirt with basic logo, this t-shirt symbolizes the classic american style. With an adjusted cup in a blend of supple cotton, our t-shirts are shaped with resistant sewings and topstitching strengthened to survive the test of time.</descripcion>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0003</id>
+        <marca>Levi&apos;s</marca>
+        <modelo>Short Sleeves Batwin T-Shirt</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1000</n_ref>
+        <nombre>T-shirt for boy</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0.4</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">19.99</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_Jeans_1 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_Jeans_1">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <vendido_por rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_store"/>
+        <calidad>Good</calidad>
+        <descripcion>Slim leg
+Flattering mid rise
+93% Cotton, 5% Polyester, 2% Elastane
+Machine wash - Cold (30° max)
+Fastening: Zip
+Regular</descripcion>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0005</id>
+        <marca>Levi&apos;s</marca>
+        <modelo>Women&apos;s 312 Slim Jeans</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1001</n_ref>
+        <nombre>Woman Jeans</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0.7</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">50.00</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_Jeans_2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_Jeans_2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <vendido_por rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_store"/>
+        <calidad>Good</calidad>
+        <descripcion>Slim leg
+Flattering mid rise
+93% Cotton, 5% Polyester, 2% Elastane
+Machine wash - Cold (30° max)
+Fastening: Zip
+Regular
+Slim</descripcion>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0006</id>
+        <marca>Levi&apos;s</marca>
+        <modelo>Women&apos;s 312 Slim Jeans</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1001</n_ref>
+        <nombre>Woman Jeans</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0.7</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">50.00</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_store -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Levi&apos;s_store">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
     </owl:NamedIndividual>
 </rdf:RDF>
 
