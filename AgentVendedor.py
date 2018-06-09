@@ -30,7 +30,7 @@ from AgentUtil.OntoNamespaces import ACL, AB
 
 
 
-import AgentUtil.SPARQLHelper import filterSPARQLValues
+from AgentUtil.SPARQLHelper import filterSPARQLValues
 from models.Pedido import Pedido
 
 __author__ = 'Swaggaaa'
@@ -41,7 +41,7 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
-sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
+
 
 logger = config_logger(level=1)
 
@@ -169,8 +169,7 @@ def browser_refund():
         #TODO: Cambiar Elena por el nombre de usuario
         query += "FILTER regex (str(?comprado_por), 'Elena').}"
 
-        sparql.setQuery(query)
-        res = sparql.query().convert()
+        res = AgentUtil.SPARQLHelper.read_query(query)
         refs = []
 
         for ref in res["results"]["bindings"]:
@@ -206,7 +205,7 @@ def browser_refund():
                         WHERE {?Producto ab:id request.form['item']}  """
             #TODO: Cambiar Elena por el nombre de usuario
 
-            sparql.setQuery(query)
+            #res = AgentUtil.SPARQLHelper.read_query(query)
 
             return render_template("resolution.html", resolution="Your request has been accepted. The transport company in charge of the devoution is %s" %escoger_transportista(), host_vendedor=(
                 AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
@@ -226,8 +225,7 @@ def browser_refund():
             query += "FILTER regex (str(?compuesto_por), '%s')." % request.form['item']
             query += "}"
 
-            sparql.setQuery(query)
-            res = sparql.query().convert()
+            res = AgentUtil.SPARQLHelper.read_query(query)
 
             fecha_entrega = res["results"]["bindings"][0]["fecha_entrega"]["value"]
             fecha_entrega = datetime.strptime(fecha_entrega,   "%Y-%m-%d %H:%M:%S.%f")
@@ -255,8 +253,7 @@ def escoger_transportista():
                     SELECT ?transportista
                     WHERE {?Empresa_de_transporte ab:transportista ?transportista }"""
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
 
     i = random.randint(0, AgentUtil.Agents.NUM_TRANSPORTISTAS)
     transportista = res["results"]["bindings"][i-1]["transportista"]["value"]
