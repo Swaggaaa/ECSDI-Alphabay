@@ -66,32 +66,36 @@ def browser_search():
             del res["results"]["bindings"][0]
 
         if request.form["cantidad"] != "":
+            aux = int(res["results"]["bindings"][0]["maxid"]["value"])
             for x in range(0, int(request.form["cantidad"])):
-                id = int(res["results"]["bindings"][0]["maxid"]["value"]) + x + 1
+                id_product = aux + x + 1
                 query = """
-                       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                                       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
-                        INSERT DATA
-                        {
-                            ab:Producto%(productoid)s rdf:type ab:Producto .
-                            ab:Producto%(productoid)s ab:id %(id)d .
-                            ab:Producto%(productoid)s ab:modelo %(modelo)s .
-                            ab:Producto%(productoid)s ab:nombre %(nombre)s .
-                            ab:Producto%(productoid)s ab:precio %(precio)d .
-                            ab:Producto%(productoid)s ab:descripcion %(descripcion)s .
-                            ab:Producto%(productoid)s ab:marca %(marca)s .
-                            ab:Producto%(productoid)s ab:n_ref %(n_ref)d .
-                            ab:Producto%(productoid)s ab:peso %(peso)f .
-                            ab:Producto%(productoid)s ab:vendido_por %(vendido_por)s .
-                            ab:Producto%(productoid)s ab:calidad %(calidad)s .
-                            }
-                            """ % {'productoid': id,
-                                   'id': id, 'modelo': '"' + request.form["modelo"] + '"',
-                                   'nombre': '"' + request.form["nombre"] + '"', 'precio': int(request.form["precio"]),
-                                   'descripcion': '"' + request.form["descripcion"] + '"',
-                                   'marca': '"' + request.form["marca"] + '"', 'n_ref': int(request.form["n_ref"]),
-                                   'peso': float(request.form["peso"]), 'vendido_por': '"' + request.form["vendido_por"] + '"',
-                                   'calidad': '"' + request.form["calidad"] + '"'}
+                                        INSERT DATA
+                                        {
+                                            ab:Producto%(productoid)s rdf:type ab:Producto .
+                                            ab:Producto%(productoid)s ab:id %(id)d .
+                                            ab:Producto%(productoid)s ab:modelo %(modelo)s .
+                                            ab:Producto%(productoid)s ab:nombre %(nombre)s .
+                                            ab:Producto%(productoid)s ab:precio %(precio)d .
+                                            ab:Producto%(productoid)s ab:descripcion %(descripcion)s .
+                                            ab:Producto%(productoid)s ab:marca %(marca)s .
+                                            ab:Producto%(productoid)s ab:n_ref %(n_ref)d .
+                                            ab:Producto%(productoid)s ab:peso %(peso)f .
+                                            ab:Producto%(productoid)s ab:vendido_por %(vendido_por)s .
+                                            ab:Producto%(productoid)s ab:calidad %(calidad)s .
+                                        }
+                                            """ % {'productoid': id_product,
+                                                   'id': id_product, 'modelo': '"' + request.form["modelo"] + '"',
+                                                   'nombre': '"' + request.form["nombre"] + '"',
+                                                   'precio': int(request.form["precio"]),
+                                                   'descripcion': '"' + request.form["descripcion"] + '"',
+                                                   'marca': '"' + request.form["marca"] + '"',
+                                                   'n_ref': int(request.form["n_ref"]),
+                                                   'peso': float(request.form["peso"]),
+                                                   'vendido_por': '"' + request.form["vendido_por"] + '"',
+                                                   'calidad': '"' + request.form["calidad"] + '"'}
 
                 res = AgentUtil.SPARQLHelper.update_query(query)
 
