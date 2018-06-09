@@ -10,6 +10,8 @@ from multiprocessing import Process, Queue
 import socket
 
 from rdflib import Namespace, Graph, RDF, URIRef
+from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
+from AgentUtil.OntoNamespaces import ACL, AB
 from flask import Flask, request, render_template, make_response
 import SPARQLWrapper
 
@@ -106,7 +108,37 @@ def browser_search():
 def comunicacion():
     global dsgraph
     global mss_cnt
-    pass
+
+    logger.info('Peticion de informacion recibida')
+
+    message = request.args['content']
+    gm = Graph()
+    gm.parse(data=message)
+    gr = None
+
+    msgdic = get_message_properties(gm)
+    if msgdic is None:
+        gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteEvaluador.uri,
+                           msgcnt=mss_cnt)
+    else:
+        perf = msgdic['performative']
+
+        # Se nos solicita que obtengamos los productos parecidos a partir de la info
+        if perf == ACL.request:
+            if 'content' in msgdic:
+                content = msgdic['content']
+
+                if 'prueba' in str(content):
+                    prioridad = gm.value(subject=content, predicate=AB.prioridad)
+                    print("PRIORIDAD " + prioridad)
+
+            else:
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteEvaluador.uri,
+                                   msgcnt=mss_cnt)
+    mss_cnt += 1
+    logger.info('Respondemos a la peticion')
+
+    return gr.serialize(format='xml')
 
 
 # Para parar el agente. Por ahora no lo necesitaremos ya que se supone que están activos 24/7 skrra
@@ -133,14 +165,39 @@ def agentbehavior1(cola):
     pass
 
 
+def recomendation_behavior():
+    global mss_cnt
+    while True:
+        logger.info('Nos registramos')
+        print("SE ENVIA AQUI " + AgentUtil.Agents.AgenteEvaluador.address)
+        # Cada 3 minutos (mock) enviamos un mensaje al agente de "Enviar lotes preparados"
+        gr = Graph()
+        gr.bind('ab', AB)
+        content = AB[AgentUtil.Agents.AgenteEvaluador.name + '-prueba']
+        gr.add((content, AB.prioridad, 'express'))
+        msg = build_message(gr, perf=ACL.request,
+                            sender=AgentUtil.Agents.AgenteEvaluador.uri,
+                            receiver=AgentUtil.Agents.AgenteEvaluador.uri,
+                            content=content,
+                            msgcnt=mss_cnt)
+        send_message(msg, AgentUtil.Agents.AgenteEvaluador.address)
+        mss_cnt += 1
+        #   time.sleep(100)
+        pass
+    pass
+
+
 if __name__ == '__main__':
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()
+    ab2 = Process(target=recomendation_behavior)
+    ab2.start()
 
     # Ponemos en marcha el servidor
     app.run(host=AgentUtil.Agents.hostname, port=AgentUtil.Agents.EVALUADOR_PORT)
 
     # Esperamos a que acaben los behaviors
     ab1.join()
+    ab2.join()
     print('The End')
