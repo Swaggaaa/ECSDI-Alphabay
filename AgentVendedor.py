@@ -28,8 +28,6 @@ import time
 
 from AgentUtil.OntoNamespaces import ACL, AB
 
-
-
 from AgentUtil.SPARQLHelper import filterSPARQLValues
 from models.Pedido import Pedido
 
@@ -40,8 +38,6 @@ mss_cnt = 0
 
 # Global triplestore graph
 dsgraph = Graph()
-
-
 
 logger = config_logger(level=1)
 
@@ -129,8 +125,7 @@ def browser_search():
     query = """
            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
-          SELECT ?n_ref (SAMPLE(?id) AS ?n_ref_id) (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_modelo)
-         (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio)
+          SELECT ?n_ref ?id ?nombre ?modelo ?calidad ?precio
           WHERE 
           {
               %s
@@ -162,7 +157,7 @@ def browser_purchase():
           ?Producto ab:id ?id .
           ?Producto ab:peso ?peso .
           }
-          """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", request.form['items'], False)
+          """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", request.form.getlist('items'), False)
 
         res = AgentUtil.SPARQLHelper.read_query(query)
 
@@ -173,7 +168,7 @@ def browser_purchase():
         pedido.direccion = request.form['direccion']
         pedido.ciudad = request.form['ciudad']
 
-        for item in request.form['items']:
+        for item in request.form.getlist('items'):
             pedido.compuesto_por.append(item)
 
         for p in res["results"]["bindings"]:
@@ -198,7 +193,9 @@ def browser_purchase():
                'ciudad': pedido.ciudad, 'peso': pedido.peso_total, 'usuario': request.cookies.get('username')}
 
         for item in pedido.compuesto_por:
-            query += "ab:pedido%(id)s ab:compuesto_por %(item)s" % {'id': pedido.id, 'item': item}
+            query += "ab:pedido%(id)s ab:compuesto_por %(item)s .\n" % {'id': pedido.id, 'item': item}
+
+        query += " }"
 
         res = AgentUtil.SPARQLHelper.update_query(query)
 
@@ -214,7 +211,7 @@ def browser_purchase():
         for item in pedido.compuesto_por:
             gmess.add((content, AB.compuesto_por, Literal(item)))
 
-        gmess.add((content, AB.peso_total, peso_total))
+        gmess.add((content, AB.peso_total, Literal(peso_total)))
         msg = build_message(gmess, perf=ACL.inform,
                             sender=AgentUtil.Agents.AgenteVendedor.uri,
                             receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
@@ -240,7 +237,7 @@ def browser_refund():
                               ?Pedido ab:compuesto_por ?compuesto_por.
                              
                           """
-        #TODO: Cambiar Elena por el nombre de usuario
+        # TODO: Cambiar Elena por el nombre de usuario
         query += "FILTER regex (str(?comprado_por), 'Elena').}"
 
         res = AgentUtil.SPARQLHelper.read_query(query)
@@ -277,18 +274,20 @@ def browser_refund():
                  
                         DELETE {?Producto ab:comprado_por 'Elena'}
                         WHERE {?Producto ab:id request.form['item']}  """
-            #TODO: Cambiar Elena por el nombre de usuario
+            # TODO: Cambiar Elena por el nombre de usuario
 
-            #res = AgentUtil.SPARQLHelper.read_query(query)
+            # res = AgentUtil.SPARQLHelper.read_query(query)
 
-            return render_template("resolution.html", resolution="Your request has been accepted. The transport company in charge of the devoution is %s" %escoger_transportista(), host_vendedor=(
-                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
-            ))
+            return render_template("resolution.html",
+                                   resolution="Your request has been accepted. The transport company in charge of the devoution is %s" % escoger_transportista(),
+                                   host_vendedor=(
+                                           AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                   ))
 
         else:
             fecha_actual = datetime.now()
 
-            query =  """
+            query = """
                 prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
                 
                 SELECT ?fecha_entrega
@@ -302,8 +301,8 @@ def browser_refund():
             res = AgentUtil.SPARQLHelper.read_query(query)
 
             fecha_entrega = res["results"]["bindings"][0]["fecha_entrega"]["value"]
-            fecha_entrega = datetime.strptime(fecha_entrega,   "%Y-%m-%d %H:%M:%S.%f")
-            dias_pasados= fecha_actual - fecha_entrega
+            fecha_entrega = datetime.strptime(fecha_entrega, "%Y-%m-%d %H:%M:%S.%f")
+            dias_pasados = fecha_actual - fecha_entrega
 
             if dias_pasados.days <= 15:
                 return render_template("resolution.html",
@@ -313,11 +312,10 @@ def browser_refund():
                                        ))
             else:
                 return render_template("resolution.html",
-                                        resolution="Your request has not been accepted because it has been %s days since you have received the product" %dias_pasados.days,
-                                        host_vendedor=(
-                        AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
-                ))
-
+                                       resolution="Your request has not been accepted because it has been %s days since you have received the product" % dias_pasados.days,
+                                       host_vendedor=(
+                                               AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                       ))
 
 
 def escoger_transportista():
@@ -330,18 +328,8 @@ def escoger_transportista():
     res = AgentUtil.SPARQLHelper.read_query(query)
 
     i = random.randint(0, AgentUtil.Agents.NUM_TRANSPORTISTAS)
-    transportista = res["results"]["bindings"][i-1]["transportista"]["value"]
+    transportista = res["results"]["bindings"][i - 1]["transportista"]["value"]
     return transportista
-
-
-
-# Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
-# única ruta, y luego filtramos por el contenido de los mensajes y las órdenes que contengan
-@app.route("/comm")
-def comunicacion():
-    global dsgraph
-    global mss_cnt
-    pass
 
 
 # Para parar el agente. Por ahora no lo necesitaremos ya que se supone que están activos 24/7 skrra

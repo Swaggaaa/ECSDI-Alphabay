@@ -21,11 +21,11 @@
         {% for product in products["results"]["bindings"] %}
             <tr>
                 <td>{{product["n_ref"]["value"]}}</td>
-                <td>{{product["n_ref_nombre"]["value"]}}</td>
-                <td>{{product["n_ref_modelo"]["value"]}}</td>
-                <td>{{product["n_ref_calidad"]["value"]}}</td>
-                <td>{{product["n_ref_precio"]["value"]}}</td>
-                {% set total_price.a = total_price.a + (product["n_ref_precio"]["value"]|float) %}
+                <td>{{product["nombre"]["value"]}}</td>
+                <td>{{product["modelo"]["value"]}}</td>
+                <td>{{product["calidad"]["value"]}}</td>
+                <td>{{product["precio"]["value"]}}</td>
+                {% set total_price.a = total_price.a + (product["precio"]["value"]|float) %}
             </tr>
         {% endfor %}
         <tr>

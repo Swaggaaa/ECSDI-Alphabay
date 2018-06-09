@@ -50,7 +50,7 @@ def login():
         resp = make_response(render_template("index.html",
                                              host_vendedor=AgentUtil.Agents.hostname + ':' + str(
                                                  AgentUtil.Agents.VENDEDOR_PORT)))
-        resp.set_cookie('username', request.form['user'])
+        resp.set_cookie('username', request.form['nombre'])
         return resp
 
 @app.route("/info", methods={'GET'})

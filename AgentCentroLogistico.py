@@ -218,6 +218,14 @@ def comunicacion():
                                msgcnt=mss_cnt)
 
     mss_cnt += 1
+
+    if gr is None:
+        gr = build_message(Graph(),
+                           ACL['inform-done'],
+                           sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                           msgcnt=mss_cnt,
+                           receiver=msgdic['sender'])
+
     return gr.serialize(format='xml')
 
 
@@ -234,7 +242,8 @@ def enviar_lotes(prioridad):
             ?Lote ab:peso ?peso .
             ?Lote ab:ciudad_destino ?ciudad .
             ?Lote ab:formado_por ?formado_por .
-            FILTER (regex(str(?prioridad), %s)     
+            FILTER regex(str(?prioridad), '%s')
+            }     
             """ % prioridad
 
     res = AgentUtil.SPARQLHelper.read_query(query)
@@ -301,15 +310,15 @@ def prepare_shipping(pedido):
            
            INSERT DATA {
            ab:Lote%(loteid)s rdf:type ab:Lote .
-           ab:Lote%(loteid)s ab:id %(id)d .
-           ab:Lote%(loteid)s ab:peso %(peso)f .
-           ab:Lote%(loteid)s ab:volumen %(vol)f .
-           ab:Lote%(loteid)s ab:ciudad_destino %(ciudad)s .
-           ab:Lote%(loteid)s ab:prioridad %(prioridad)s .
+           ab:Lote%(loteid)s ab:id %(id)s .
+           ab:Lote%(loteid)s ab:peso %(peso)s .
+           ab:Lote%(loteid)s ab:ciudad_destino '%(ciudad)s' .
+           ab:Lote%(loteid)s ab:prioridad '%(prioridad)s' .
            ab:Lote%(loteid)s ab:formado_por %(pedido)s .
-           """ % {'loteid': id, 'id': id, 'peso': pedido.peso_total, 'vol': pow(pedido.peso_total, 2),
+           }
+           """ % {'loteid': id, 'id': id, 'peso': pedido.peso_total,
                   'ciudad': pedido.ciudad, 'prioridad': pedido.prioridad,
-                  'pedido': pedido.id}  # TODO: Quitar el random y la sick formula de volumen
+                  'pedido': pedido.id}  # TODO: Quitar el random
 
         res = AgentUtil.SPARQLHelper.update_query(query)
 
@@ -317,7 +326,7 @@ def prepare_shipping(pedido):
     else:
         lote_elegido = res["results"]["bindings"][0]
         for lote in res["results"]["bindings"]:
-            if lote_elegido["peso"]["value"] > lote["peso"]["value"]:
+            if float(lote_elegido["peso"]["value"]) > float(lote["peso"]["value"]):
                 lote_elegido = lote
 
         # Insertamos el pedido dentro del nuevo lote
@@ -326,17 +335,14 @@ def prepare_shipping(pedido):
            
            DELETE {
                 ?Lote ab:peso ?peso .
-                ?Lote ab:volumen ?volumen .
                 }
            INSERT {
                 ?Lote ab:peso %s .
-                ?Lote ab:volumen %s .
                 }
            WHERE {
                 ?Lote ab:id %s .
                 }
-        """ % ((float(lote_elegido["peso"]["value"]) + pedido.peso_total),
-               pow(float(lote_elegido["peso"]["value"]) + pedido.peso_total, 2),
+        """ % (Literal(float(lote_elegido["peso"]["value"]) + float(pedido.peso_total)),
                lote_elegido["id"]["value"])
 
         res = AgentUtil.SPARQLHelper.update_query(query)
@@ -458,7 +464,7 @@ def economic_behavior():
         gr = Graph()
         gr.bind('ab', AB)
         content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-enviar-lotes']
-        gr.add((content, AB.prioridad, 'economic'))
+        gr.add((content, AB.prioridad, Literal('economic')))
         msg = build_message(gr, perf=ACL.request,
                             sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                             receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
@@ -466,7 +472,7 @@ def economic_behavior():
                             msgcnt=mss_cnt)
         send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
         mss_cnt += 1
-        time.sleep(300)
+        time.sleep(30000)
         pass
     pass
 
@@ -478,7 +484,7 @@ def standard_behavior():
         gr = Graph()
         gr.bind('ab', AB)
         content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-enviar-lotes']
-        gr.add((content, AB.prioridad, 'standard'))
+        gr.add((content, AB.prioridad, Literal('standard')))
         msg = build_message(gr, perf=ACL.request,
                             sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                             receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
@@ -486,7 +492,7 @@ def standard_behavior():
                             msgcnt=mss_cnt)
         send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
         mss_cnt += 1
-        time.sleep(300)
+        time.sleep(18000)
         pass
     pass
 
@@ -498,7 +504,7 @@ def express_behavior():
         gr = Graph()
         gr.bind('ab', AB)
         content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-enviar-lotes']
-        gr.add((content, AB.prioridad, 'express'))
+        gr.add((content, AB.prioridad, Literal('express')))
         msg = build_message(gr, perf=ACL.request,
                             sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                             receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
@@ -506,7 +512,7 @@ def express_behavior():
                             msgcnt=mss_cnt)
         send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
         mss_cnt += 1
-        time.sleep(300)
+        time.sleep(6000)
         pass
     pass
 

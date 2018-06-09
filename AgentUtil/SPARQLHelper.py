@@ -23,9 +23,11 @@ def read_query(query):
     sparql.setQuery(query)
     return sparql.query().convert()
 
+
 def update_query(query):
     sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint_update)
     sparql.setCredentials(user='admin', passwd='admin')
     sparql.setReturnFormat(SPARQLWrapper.JSON)
+    sparql.method = 'POST'  # GET by Default
     sparql.setQuery(query)
     return sparql.query().convert()
