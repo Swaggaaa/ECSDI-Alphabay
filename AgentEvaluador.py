@@ -51,9 +51,13 @@ def login():
         resp = make_response(render_template("index.html",
                                              host_vendedor=AgentUtil.Agents.hostname + ':' + str(
                                                  AgentUtil.Agents.VENDEDOR_PORT),
-                                             username=request.form['nombre']))
+                                             username=request.form['nombre'],
+                                             host_representante=AgentUtil.Agents.hostname + ':' + str(
+                                                 AgentUtil.Agents.REPRESENTANTE_PORT)
+                                             ))
         session['username'] = request.form['nombre']
         return resp
+
 
 @app.route("/info", methods={'GET'})
 def info():
@@ -64,6 +68,7 @@ def info():
                        
                        
         """
+
 
 @app.route("/search", methods=['GET', 'POST'])
 def browser_search():

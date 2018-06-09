@@ -73,9 +73,11 @@ def comunicacion():
                 content = msgdic['content']
 
                 if 'notificar-envios' in str(content):
-                    ids = gm.value(subject=content, predicate=AB.formado_por)
+                    ids = gm.value(subject=content, predicate=AB.id)
                     transportista = gm.value(subject=content, predicate=AB.transportista)
 
+                    logger.info("[#] Percepcion - Debemos notificar a los usuarios de sus pedidos enviados!")
+                    logger.info("[#] Notificando a %s usuarios" % len(ids))
                     for id in ids:
                         notificar_usuario(id, transportista)
 
@@ -200,6 +202,8 @@ def browser_purchase():
         query += " }"
 
         res = AgentUtil.SPARQLHelper.update_query(query)
+
+        logger.info("[#] Creado un nuevo pedido (%s)" % pedido.id)
 
         gmess = Graph()
         gmess.bind('ab', AB)

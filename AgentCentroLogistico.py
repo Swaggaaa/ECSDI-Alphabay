@@ -122,6 +122,7 @@ def comunicacion():
                     prioridad = gm.value(subject=content, predicate=AB.prioridad)
 
                     # Enviamos los lotes del tipo que tocan
+                    logger.info("[#] Percepcion - Enviar lotes de prioridad " + prioridad)
                     enviar_lotes(prioridad)
 
             else:
@@ -141,6 +142,8 @@ def comunicacion():
                 pedido.direccion = gm.value(subject=content, predicate=AB.direccion)
                 pedido.ciudad = gm.value(subject=content, predicate=AB.ciudad)
 
+                logger.info("[#] Percepcion - Organizar nuevo pedido (%s) " % pedido.id)
+
                 prepare_shipping(pedido)
 
             gr = build_message(Graph(),
@@ -157,6 +160,8 @@ def comunicacion():
                 oferta.id = gm.value(subject=content, predicate=AB.id)
                 oferta.precio = gm.value(subject=content, predicate=AB.precio)
                 oferta.transportista = gm.value(subject=content, predicate=AB.transportista)
+
+                logger.info("[#] Percepcion - Nueva oferta (%s)" % oferta.id)
 
                 if best_offer is None or best_offer.precio > oferta.precio:
                     best_offer = oferta
@@ -178,6 +183,8 @@ def comunicacion():
                 oferta.id = gm.value(subject=content, predicate=AB.id)
                 oferta.precio = gm.value(subject=content, predicate=AB.precio)
                 oferta.transportista = gm.value(subject=content, predicate=AB.transportista)
+
+                logger.info("[#] Percepcion - Contraoferta aceptada (%s)" % oferta.id)
 
                 if best_offer is None or best_offer.precio > oferta.precio:
                     best_offer = oferta
@@ -202,6 +209,8 @@ def comunicacion():
                 content = msgdic['content']
                 num_respuestas += 1
 
+                logger.info("[#] Percepcion - Contraoferta denegada :(")
+
                 # 2 proposed agents
                 if num_respuestas == 2:
                     aceptar_oferta(best_offer.transportista)
@@ -220,14 +229,14 @@ def comunicacion():
             gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                                msgcnt=mss_cnt)
 
-    mss_cnt += 1
-
     if gr is None:
         gr = build_message(Graph(),
                            ACL['inform-done'],
                            sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                            msgcnt=mss_cnt,
                            receiver=msgdic['sender'])
+
+    mss_cnt += 1
 
     return gr.serialize(format='xml')
 
@@ -251,6 +260,7 @@ def enviar_lotes(prioridad):
 
     res = AgentUtil.SPARQLHelper.read_query(query)
 
+    logger.info("[#] Lotes a enviar: " + str(len(res["results"]["bindings"])))
     if len(res["results"]["bindings"]) != 0:
         # IDs a enviar
         lotes = []
@@ -282,6 +292,7 @@ def enviar_lotes(prioridad):
 
         for lote in lotes:
             lotes_enviando.append(lote)
+            logger.info("[#] Solicitando oferta para lote " + lote.id)
             solicita_oferta(lote)
 
         # Eliminamos los lotes (es decir, los enviamos)
@@ -307,6 +318,7 @@ def prepare_shipping(pedido):
 
     # No existe ningún lote actualmente
     if len(res["results"]["bindings"]) == 0:
+        logger.info("[#] NO existen lotes!! Creando uno para %s y %s" % (pedido.ciudad, pedido.prioridad))
         id = random.randint(1, 999999999)
         query = """
          prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -332,6 +344,7 @@ def prepare_shipping(pedido):
             if float(lote_elegido["peso"]["value"]) > float(lote["peso"]["value"]):
                 lote_elegido = lote
 
+        logger.info("[#] Lote elegido: %s (peso: %s)" % (lote_elegido["id"]["value"], lote_elegido["peso"]["value"]))
         # Insertamos el pedido dentro del nuevo lote
         query = """
         prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -344,6 +357,8 @@ def prepare_shipping(pedido):
                 }
            WHERE {
                 ?Lote ab:id %s .
+                ?Lote rdf:type ab:Lote .
+                ?Lote ab:peso ?peso .
                 }
         """ % (Literal(float(lote_elegido["peso"]["value"]) + float(pedido.peso_total)),
                lote_elegido["id"]["value"])
@@ -352,6 +367,7 @@ def prepare_shipping(pedido):
 
 
 def solicita_oferta(lote):
+    logger.info("[#] Enviando peticion a los transportistas")
     global mss_cnt
     gmess = Graph()
     gmess.bind('ab', AB)
@@ -380,13 +396,20 @@ def solicita_oferta(lote):
 
 def proponer_oferta(oferta):
     global mss_cnt
+    oferta.transportista = AgentUtil.Agents.AgenteTransportista if str(oferta.transportista) == 'SEUR' else \
+        AgentUtil.Agents.AgenteTransportista2
+
     gmess = Graph()
     gmess.bind('ab', AB)
 
-    nuevo_precio = oferta.precio - (oferta.precio / 5.0)
+    nuevo_precio = float(oferta.precio) - (float(oferta.precio) / 10.0)
     content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-proponer-oferta']
     gmess.add((content, AB.id, Literal(oferta.id)))
     gmess.add((content, AB.precio, Literal(nuevo_precio)))
+
+    logger.info("[#] Proponiendo oferta a %s y bajando el precio de %s a %s" %
+                (oferta.transportista, oferta.precio, nuevo_precio))
+
     msg = build_message(gmess, perf=ACL.propose,
                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                         receiver=oferta.transportista.uri,
@@ -399,8 +422,13 @@ def proponer_oferta(oferta):
 
 def aceptar_oferta(transportista):
     global mss_cnt
+    transportista = AgentUtil.Agents.AgenteTransportista if str(transportista) == 'SEUR' else \
+        AgentUtil.Agents.AgenteTransportista2
     gmess = Graph()
     content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-aceptar-oferta']
+
+    logger.info("[#] Aceptando oferta a %s" % transportista)
+
     msg = build_message(gmess, perf=ACL.accept_proposal,
                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                         receiver=transportista.uri,
@@ -412,6 +440,8 @@ def aceptar_oferta(transportista):
 
 def notificar_envios(transportista):
     global mss_cnt
+    transportista = AgentUtil.Agents.AgenteTransportista if str(transportista) == 'SEUR' else \
+        AgentUtil.Agents.AgenteTransportista2
     pedidos = []
     for lote in lotes_enviando:
         query = """
@@ -433,8 +463,10 @@ def notificar_envios(transportista):
     gmess = Graph()
     content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + "-notificar-envios"]
     for pedido in pedidos:
-        gmess.add((content, AB.id, pedido.id))
-    gmess.add((content, AB.transportista, transportista))
+        gmess.add((content, AB.id, Literal(pedido)))
+    gmess.add((content, AB.transportista, Literal(transportista)))
+
+    logger.info("[#] Notificando al Ag. Vendedor de %s pedidos enviados" % len(pedidos))
 
     msg = build_message(gmess, perf=ACL.inform,
                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
@@ -524,18 +556,18 @@ if __name__ == '__main__':
     # Nos conectamos al StarDog
 
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
-    ab1 = Process(target=economic_behavior)
-    ab1.start()
+    #ab1 = Process(target=economic_behavior)
+    #ab1.start()
     ab2 = Process(target=standard_behavior)
     ab2.start()
-    ab3 = Process(target=express_behavior)
-    ab3.start()
+    #ab3 = Process(target=express_behavior)
+    #ab3.start()
 
     # Ponemos en marcha el servidor
     app.run(host=AgentUtil.Agents.hostname, port=AgentUtil.Agents.CENTROLOG_PORT)
 
     # Esperamos a que acaben los behaviors
-    ab1.join()
+    #ab1.join()
     ab2.join()
-    ab3.join()
+    #ab3.join()
     print('The End')

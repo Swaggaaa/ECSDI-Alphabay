@@ -33,12 +33,12 @@ AgenteCentroLogistico = Agent('AgenteCentroLogistico',
                               'http://%s:%d/comm' % (hostname, CENTROLOG_PORT),
                               'http://%s:%d/Stop' % (hostname, CENTROLOG_PORT))
 
-AgenteTransportista = Agent('AgenteTransportista',
+AgenteTransportista = Agent('SEUR',
                             AB.AgenteTransportista,
                             'http://%s:%d/comm' % (hostname, TRANSPORTISTA_PORT),
                             'http://%s:%d/Stop' % (hostname, TRANSPORTISTA_PORT))
 
-AgenteTransportista2 = Agent('AgenteTransportista',
+AgenteTransportista2 = Agent('CORREOS',
                              AB.AgenteTransportista2,
                              'http://%s:%d/comm' % (hostname, TRANSPORTISTA2_PORT),
                              'http://%s:%d/Stop' % (hostname, TRANSPORTISTA2_PORT))
