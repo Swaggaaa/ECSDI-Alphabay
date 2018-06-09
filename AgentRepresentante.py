@@ -72,6 +72,7 @@ def browser_search():
                 query = """
                                        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
+
                                         INSERT DATA
                                         {
                                             ab:Producto%(productoid)s rdf:type ab:Producto .
