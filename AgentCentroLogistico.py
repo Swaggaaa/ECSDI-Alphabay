@@ -8,31 +8,24 @@ Ejemplo de agente para implementar los vuestros.
 from __future__ import print_function
 
 import random
-from multiprocessing import Process, Queue
-import socket
-
-from rdflib import Namespace, Graph, RDF, URIRef, Literal
-from rdflib import Namespace, Graph, RDF, URIRef
-from flask import Flask, request, render_template
-import SPARQLWrapper
-from rdflib.namespace import FOAF
-
-import AgentUtil
-from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
-from AgentUtil.FlaskServer import shutdown_server
-from AgentUtil.Agent import Agent
-from AgentUtil.Logging import config_logger
-import AgentUtil.Agents
-
 # Para el sleep
 import time
+from multiprocessing import Process, Queue
 
+from flask import Flask, request, render_template
+from rdflib import Graph
+from rdflib import Literal
+
+import AgentUtil
+import AgentUtil.Agents
+import AgentUtil.SPARQLHelper
+from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
+from AgentUtil.FlaskServer import shutdown_server
+from AgentUtil.Logging import config_logger
 from AgentUtil.OntoNamespaces import ACL, AB
-from AgentUtil.SPARQLHelper import filterSPARQLValues
 from models.Lote import Lote
 from models.Oferta import Oferta
 from models.Pedido import Pedido
-from models.Producto import Producto
 
 __author__ = 'Swaggaaa'
 
@@ -42,7 +35,7 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
-sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
+
 
 logger = config_logger(level=1)
 
@@ -78,10 +71,9 @@ SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_mode
               ?Producto ab:precio ?precio
             }
             GROUP BY (?n_ref)
-            """ % filterSPARQLValues("?n_ref", request.form.getlist('items'), False)
+            """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", request.form.getlist('items'), False)
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
     return render_template('buy.html', products=res)
 
 
@@ -247,8 +239,7 @@ def enviar_lotes(prioridad):
             FILTER (regex(str(?prioridad), %s)     
             """ % prioridad
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
 
     if len(res["results"]["bindings"]) != 0:
         # IDs a enviar
@@ -274,7 +265,7 @@ def enviar_lotes(prioridad):
             ?Lote ab:id ?id .
             ?Lote ?p ?v 
          }
-        """ % filterSPARQLValues("?id", ids, False)
+        """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", ids, False)
 
         # Limpiamos los lotes con los nuevos a enviar
         lotes_enviando = []
@@ -284,8 +275,7 @@ def enviar_lotes(prioridad):
             solicita_oferta(lote)
 
         # Eliminamos los lotes (es decir, los enviamos)
-        sparql.setQuery(query)
-        sparql.query()
+        res = AgentUtil.SPARQLHelper.update_query(query)
 
 
 def prepare_shipping(pedido):
@@ -303,8 +293,7 @@ def prepare_shipping(pedido):
           }
         """ % (pedido.ciudad, pedido.prioridad)
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
 
     # No existe ningún lote actualmente
     if len(res["results"]["bindings"]) == 0:
@@ -324,8 +313,7 @@ def prepare_shipping(pedido):
                   'ciudad': pedido.ciudad, 'prioridad': pedido.prioridad,
                   'pedido': pedido.id}  # TODO: Quitar el random y la sick formula de volumen
 
-        sparql.setQuery(query)
-        sparql.query()  # Creamos un nuevo lote con el pedido
+        res = AgentUtil.SPARQLHelper.update_query(query)
 
     # Ya existen lotes, vamos a coger el más vacío con mismo destino
     else:
@@ -353,8 +341,7 @@ def prepare_shipping(pedido):
                pow(float(lote_elegido["peso"]["value"]) + pedido.peso_total, 2),
                lote_elegido["id"]["value"])
 
-        sparql.setQuery(query)
-        sparql.query()
+        res = AgentUtil.SPARQLHelper.update_query(query)
 
 
 def solicita_oferta(lote):
@@ -499,8 +486,6 @@ def express_behavior():
 
 if __name__ == '__main__':
     # Nos conectamos al StarDog
-    sparql.setCredentials(user='admin', passwd='admin')
-    sparql.setReturnFormat(SPARQLWrapper.JSON)
 
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=economic_behavior)
