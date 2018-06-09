@@ -10,7 +10,7 @@ from multiprocessing import Process, Queue
 import socket
 
 from rdflib import Namespace, Graph, RDF, URIRef, Literal
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, session
 import SPARQLWrapper
 from rdflib.namespace import FOAF
 
@@ -45,6 +45,7 @@ cola1 = Queue()
 
 # Flask stuff
 app = Flask(__name__)
+app.secret_key = 'AgentVendedor'
 
 
 @app.route("/comm")
@@ -122,6 +123,7 @@ def notificar_usuario(id, transportista):
 @app.route("/buy", methods=['POST'])
 def browser_search():
     global dsgraph
+    session['username'] = request.form['user']
     query = """
            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
@@ -190,10 +192,10 @@ def browser_purchase():
              ab:Pedido%(id)s ab:peso_total %(peso)s .
              ab:Pedido%(id)s ab:comprado_por '%(usuario)s' .
         """ % {'id': pedido.id, 'prioridad': pedido.prioridad, 'fecha': pedido.fecha_compra, 'dir': pedido.direccion,
-               'ciudad': pedido.ciudad, 'peso': pedido.peso_total, 'usuario': request.cookies.get('username')}
+               'ciudad': pedido.ciudad, 'peso': pedido.peso_total, 'usuario': session['username']}
 
         for item in pedido.compuesto_por:
-            query += "ab:pedido%(id)s ab:compuesto_por %(item)s .\n" % {'id': pedido.id, 'item': item}
+            query += "ab:Pedido%(id)s ab:compuesto_por %(item)s .\n" % {'id': pedido.id, 'item': item}
 
         query += " }"
 
@@ -220,13 +222,14 @@ def browser_purchase():
         send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
         mss_cnt += 1
 
-        render_template('finished.html', products=res)
+        return render_template('finished.html')
 
 
 @app.route("/refund", methods=['GET', 'POST'])
 def browser_refund():
     global dsgraph
     if request.method == 'GET':
+        session['username'] = request.args.get('user')
         query = """
                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
@@ -237,8 +240,7 @@ def browser_refund():
                               ?Pedido ab:compuesto_por ?compuesto_por.
                              
                           """
-        # TODO: Cambiar Elena por el nombre de usuario
-        query += "FILTER regex (str(?comprado_por), 'Elena').}"
+        query += "FILTER regex (str(?comprado_por), '%s').}" % session['username']
 
         res = AgentUtil.SPARQLHelper.read_query(query)
         refs = []
@@ -272,14 +274,13 @@ def browser_refund():
             query = """
                  prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
                  
-                        DELETE {?Producto ab:comprado_por 'Elena'}
-                        WHERE {?Producto ab:id request.form['item']}  """
-            # TODO: Cambiar Elena por el nombre de usuario
+                        DELETE {?Producto ab:comprado_por '%s'}
+                        WHERE {?Producto ab:id request.form['item']}  """ % session['username']
 
             # res = AgentUtil.SPARQLHelper.read_query(query)
 
             return render_template("resolution.html",
-                                   resolution="Your request has been accepted. The transport company in charge of the devoution is %s" % escoger_transportista(),
+                                   resolution="Your request has been accepted. The transport company in charge of the devolution is %s" % escoger_transportista(),
                                    host_vendedor=(
                                            AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
                                    ))
@@ -327,8 +328,8 @@ def escoger_transportista():
 
     res = AgentUtil.SPARQLHelper.read_query(query)
 
-    i = random.randint(0, AgentUtil.Agents.NUM_TRANSPORTISTAS)
-    transportista = res["results"]["bindings"][i - 1]["transportista"]["value"]
+    i = random.randint(1, AgentUtil.Agents.NUM_TRANSPORTISTAS)
+    transportista = res["results"]["bindings"][i-1]["transportista"]["value"]
     return transportista
 
 

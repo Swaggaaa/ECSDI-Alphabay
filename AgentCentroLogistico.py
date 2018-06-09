@@ -10,7 +10,7 @@ from __future__ import print_function
 import random
 # Para el sleep
 import time
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, current_process
 
 from flask import Flask, request, render_template
 from rdflib import Graph
@@ -41,6 +41,7 @@ cola1 = Queue()
 
 # Flask stuff
 app = Flask(__name__)
+app.secret_key = 'AgentCentroLogistico'
 
 # Contador de respuestas
 num_respuestas = 0
@@ -97,6 +98,8 @@ def comunicacion():
     global mss_cnt
     global best_offer
     global num_respuestas
+    if current_process().name != 'MainProcess':
+        return
 
     message = request.args['content']
     gm = Graph()
@@ -235,7 +238,7 @@ def enviar_lotes(prioridad):
     query = """
             prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
             
-            SELECT ?id ?peso ?ciudad ?formado_por
+            SELECT ?id ?peso ?ciudad ?formado_por ?prioridad
             WHERE {
             ?Lote ab:id ?id .
             ?Lote ab:prioridad ?prioridad .
@@ -353,10 +356,10 @@ def solicita_oferta(lote):
     gmess = Graph()
     gmess.bind('ab', AB)
     content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-solicitar-oferta']
-    gmess.add((content, AB.peso, lote.peso_total))
-    gmess.add((content, AB.ciudad, lote.ciudad_destino))
-    gmess.add((content, AB.prioridad, lote.prioridad))
-    gmess.add((content, AB.id, lote.id))
+    gmess.add((content, AB.peso, Literal(lote.peso_total)))
+    gmess.add((content, AB.ciudad, Literal(lote.ciudad_destino)))
+    gmess.add((content, AB.prioridad, Literal(lote.prioridad)))
+    gmess.add((content, AB.id, Literal(lote.id)))
     msg = build_message(gmess, perf=ACL.request,
                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                         receiver=AgentUtil.Agents.AgenteTransportista.uri,

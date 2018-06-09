@@ -10,7 +10,7 @@ from multiprocessing import Process, Queue
 import socket
 
 from rdflib import Namespace, Graph, RDF, URIRef
-from flask import Flask, request, render_template, make_response
+from flask import Flask, request, render_template, make_response, session
 import SPARQLWrapper
 
 from AgentUtil.FlaskServer import shutdown_server
@@ -38,6 +38,7 @@ cola1 = Queue()
 
 # Flask stuff
 app = Flask(__name__)
+app.secret_key = 'AgentEvaluador'
 
 
 # Esto en verdad no es de este agente, pero lo ponemos aqui para poder tener el indice de paginas en algun lado
@@ -49,8 +50,9 @@ def login():
     else:
         resp = make_response(render_template("index.html",
                                              host_vendedor=AgentUtil.Agents.hostname + ':' + str(
-                                                 AgentUtil.Agents.VENDEDOR_PORT)))
-        resp.set_cookie('username', request.form['nombre'])
+                                                 AgentUtil.Agents.VENDEDOR_PORT),
+                                             username=request.form['nombre']))
+        session['username'] = request.form['nombre']
         return resp
 
 @app.route("/info", methods={'GET'})
@@ -108,7 +110,8 @@ def browser_search():
             del res["results"]["bindings"][0]
 
         return render_template("results.html", products=res, host_vendedor=(
-                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
+                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)),
+                               username=session['username'])
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1

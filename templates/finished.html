@@ -13,29 +13,7 @@
     </style>
 </head>
 <body>
-<table style="width:100%">
-    <tr>
-        <th>Ref. Number</th> <th>Name</th> <th>Model</th> <th>Quality</th> <th>Price</th>
-    </tr>
-        {% set total_price = namespace(a=0.0) %}
-        {% for product in products["results"]["bindings"] %}
-            <tr>
-                <td>{{product["n_ref"]["value"]}}</td>
-                <td>{{product["n_ref_nombre"]["value"]}}</td>
-                <td>{{product["n_ref_modelo"]["value"]}}</td>
-                <td>{{product["n_ref_calidad"]["value"]}}</td>
-                <td>{{product["n_ref_precio"]["value"]}}</td>
-                {% set total_price.a = total_price.a + (product["n_ref_precio"]["value"]|float) %}
-            </tr>
-        {% endfor %}
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>{{ total_price.a }}</td>
-        </tr>
-</table>
-
 <h1>Transaction completed succesfully!!</h1>
 <h3>Your personal page will be updated once the delivery agency provides us with a tracking number</h3>
+</body>
+</html>
