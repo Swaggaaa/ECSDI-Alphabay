@@ -10,6 +10,7 @@ import SPARQLWrapper
 from rdflib.namespace import FOAF
 
 import AgentUtil
+import AgentUtil.SPARQLHelper
 from AgentUtil.ACLMessages import build_message, send_message
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
@@ -30,7 +31,6 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
-sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
 
 logger = config_logger(level=1)
 
@@ -40,7 +40,7 @@ cola1 = Queue()
 app = Flask(__name__)
 
 
-@app.route("/add_items", methods=['GET', 'POST'])
+@app.route("/add", methods=['GET', 'POST'])
 def browser_search():
     global dsgraph
     if request.method == 'GET':
@@ -57,8 +57,8 @@ def browser_search():
                                        
             """
 
-        sparql.setQuery(query)
-        res = sparql.query().convert()
+        res = AgentUtil.SPARQLHelper.read_query(query)
+        print(res["results"]["bindings"][0]["maxid"]["value"])
 
         try:
             res["results"]["bindings"][0]["maxid"]["value"]
@@ -94,10 +94,10 @@ def browser_search():
                                    'calidad': '"' + request.form["calidad"] + '"'}
 
                 print("ESTA ES LA QUERY " + query)
-                sparql.setQuery(query)
-                sparql.query()
+                res = AgentUtil.SPARQLHelper.update_query(query)
 
-        return render_template("search.html")
+        return render_template("addProductOk.html", host_evaluador=(
+                    AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)))
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
@@ -134,9 +134,6 @@ def agentbehavior1(cola):
 
 
 if __name__ == '__main__':
-    # Nos conectamos al StarDog
-    sparql.setCredentials(user='admin', passwd='admin')
-    sparql.setReturnFormat(SPARQLWrapper.JSON)
 
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=agentbehavior1, args=(cola1,))
