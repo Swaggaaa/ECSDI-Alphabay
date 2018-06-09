@@ -12,7 +12,8 @@ TRANSPORTISTA_PORT = 9050
 TRANSPORTISTA2_PORT = 9051
 
 hostname = socket.gethostname()
-endpoint = 'http://localhost:5820/myDB/query'
+endpoint_read = 'http://localhost:5820/myDB/query'
+endpoint_update = 'http://localhost:5820/myDB/update'
 
 AgenteEvaluador = Agent('AgenteEvaluador',
                         AB.AgentEvaluador,

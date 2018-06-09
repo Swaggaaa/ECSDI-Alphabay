@@ -28,7 +28,7 @@ import AgentUtil.Agents
 import time
 
 from AgentUtil.OntoNamespaces import ACL, AB
-from AgentUtil.SPARQLHelper import filterSPARQLValues
+import AgentUtil.SPARQLHelper
 from models.Lote import Lote
 from models.Oferta import Oferta
 from models.Pedido import Pedido
@@ -42,7 +42,7 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
-sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
+
 
 logger = config_logger(level=1)
 
@@ -80,8 +80,7 @@ SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_mode
             GROUP BY (?n_ref)
             """ % filterSPARQLValues("?n_ref", request.form.getlist('items'), False)
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
     return render_template('buy.html', products=res)
 
 
@@ -247,8 +246,7 @@ def enviar_lotes(prioridad):
             FILTER (regex(str(?prioridad), %s)     
             """ % prioridad
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
 
     if len(res["results"]["bindings"]) != 0:
         # IDs a enviar
@@ -284,8 +282,7 @@ def enviar_lotes(prioridad):
             solicita_oferta(lote)
 
         # Eliminamos los lotes (es decir, los enviamos)
-        sparql.setQuery(query)
-        sparql.query()
+        res = AgentUtil.SPARQLHelper.update_query(query)
 
 
 def prepare_shipping(pedido):
@@ -303,8 +300,7 @@ def prepare_shipping(pedido):
           }
         """ % (pedido.ciudad, pedido.prioridad)
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
 
     # No existe ningún lote actualmente
     if len(res["results"]["bindings"]) == 0:
@@ -324,8 +320,7 @@ def prepare_shipping(pedido):
                   'ciudad': pedido.ciudad, 'prioridad': pedido.prioridad,
                   'pedido': pedido.id}  # TODO: Quitar el random y la sick formula de volumen
 
-        sparql.setQuery(query)
-        sparql.query()  # Creamos un nuevo lote con el pedido
+        res = AgentUtil.SPARQLHelper.update_query(query)
 
     # Ya existen lotes, vamos a coger el más vacío con mismo destino
     else:
@@ -353,8 +348,7 @@ def prepare_shipping(pedido):
                pow(float(lote_elegido["peso"]["value"]) + pedido.peso_total, 2),
                lote_elegido["id"]["value"])
 
-        sparql.setQuery(query)
-        sparql.query()
+        res = AgentUtil.SPARQLHelper.update_query(query)
 
 
 def solicita_oferta(lote):
@@ -499,8 +493,6 @@ def express_behavior():
 
 if __name__ == '__main__':
     # Nos conectamos al StarDog
-    sparql.setCredentials(user='admin', passwd='admin')
-    sparql.setReturnFormat(SPARQLWrapper.JSON)
 
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=economic_behavior)

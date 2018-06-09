@@ -27,7 +27,7 @@ import AgentUtil.Agents
 import time
 
 from AgentUtil.OntoNamespaces import ACL, AB
-from AgentUtil.SPARQLHelper import filterSPARQLValues
+import AgentUtil.SPARQLHelper
 from models.Pedido import Pedido
 
 __author__ = 'Swaggaaa'
@@ -37,8 +37,6 @@ mss_cnt = 0
 
 # Global triplestore graph
 dsgraph = Graph()
-
-sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
 
 logger = config_logger(level=1)
 
@@ -68,8 +66,7 @@ def browser_search():
             }
             """ % filterSPARQLValues("?id", request.form.getlist('items'), False)
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
     return render_template('buy.html', products=res)
 
 
@@ -90,8 +87,7 @@ def browser_purchase():
           }
           """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", request.form['items'], False)
 
-        sparql.setQuery(query)
-        res = sparql.query().convert()
+        res = AgentUtil.SPARQLHelper.read_query(query)
 
         pedido = Pedido()
         pedido.id = random.randint(1, 99999999)  # TODO: Get latest id
@@ -125,8 +121,7 @@ def browser_purchase():
         for item in pedido.compuesto_por:
             query += "ab:pedido%(id)s ab:compuesto_por %(item)s" % {'id': pedido.id, 'item': item}
 
-        sparql.setQuery(query)
-        res = sparql.query().convert()
+        res = AgentUtil.SPARQLHelper.update_query(query)
 
         gmess = Graph()
         gmess.bind('ab', AB)
@@ -175,8 +170,7 @@ def browser_refund():
         query += "FILTER regex (str(?comprado_por), 'Elena')."
         query += "} GROUP BY ?n_ref"
 
-        sparql.setQuery(query)
-        res = sparql.query().convert()
+        res = AgentUtil.SPARQLHelper.read_query(query)
 
         try:
             res["results"]["bindings"][0]["n_ref"]
@@ -227,10 +221,6 @@ def agentbehavior1(cola):
 
 
 if __name__ == '__main__':
-    # Nos conectamos al StarDog
-    sparql.setCredentials(user='admin', passwd='admin')
-    sparql.setReturnFormat(SPARQLWrapper.JSON)
-
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()

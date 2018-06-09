@@ -25,7 +25,7 @@ import AgentUtil.Agents
 import time
 
 from AgentUtil.OntoNamespaces import ACL, AB
-from AgentUtil.SPARQLHelper import filterSPARQLValues
+import AgentUtil.SPARQLHelper
 
 __author__ = 'Swaggaaa'
 
@@ -34,8 +34,6 @@ mss_cnt = 0
 
 # Global triplestore graph
 dsgraph = Graph()
-
-sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
 
 logger = config_logger(level=1)
 
@@ -80,10 +78,6 @@ def agentbehavior1(cola):
 
 
 if __name__ == '__main__':
-    # Nos conectamos al StarDog
-    sparql.setCredentials(user='admin', passwd='admin')
-    sparql.setReturnFormat(SPARQLWrapper.JSON)
-
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()
