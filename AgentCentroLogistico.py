@@ -8,31 +8,24 @@ Ejemplo de agente para implementar los vuestros.
 from __future__ import print_function
 
 import random
-from multiprocessing import Process, Queue
-import socket
-
-from rdflib import Namespace, Graph, RDF, URIRef, Literal
-from rdflib import Namespace, Graph, RDF, URIRef
-from flask import Flask, request, render_template
-import SPARQLWrapper
-from rdflib.namespace import FOAF
-
-import AgentUtil
-from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
-from AgentUtil.FlaskServer import shutdown_server
-from AgentUtil.Agent import Agent
-from AgentUtil.Logging import config_logger
-import AgentUtil.Agents
-
 # Para el sleep
 import time
+from multiprocessing import Process, Queue
 
-from AgentUtil.OntoNamespaces import ACL, AB
+from flask import Flask, request, render_template
+from rdflib import Graph
+from rdflib import Literal
+
+import AgentUtil
+import AgentUtil.Agents
 import AgentUtil.SPARQLHelper
+from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
+from AgentUtil.FlaskServer import shutdown_server
+from AgentUtil.Logging import config_logger
+from AgentUtil.OntoNamespaces import ACL, AB
 from models.Lote import Lote
 from models.Oferta import Oferta
 from models.Pedido import Pedido
-from models.Producto import Producto
 
 __author__ = 'Swaggaaa'
 
@@ -78,7 +71,7 @@ SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_mode
               ?Producto ab:precio ?precio
             }
             GROUP BY (?n_ref)
-            """ % filterSPARQLValues("?n_ref", request.form.getlist('items'), False)
+            """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", request.form.getlist('items'), False)
 
     res = AgentUtil.SPARQLHelper.read_query(query)
     return render_template('buy.html', products=res)
@@ -272,7 +265,7 @@ def enviar_lotes(prioridad):
             ?Lote ab:id ?id .
             ?Lote ?p ?v 
          }
-        """ % filterSPARQLValues("?id", ids, False)
+        """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", ids, False)
 
         # Limpiamos los lotes con los nuevos a enviar
         lotes_enviando = []

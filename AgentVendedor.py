@@ -64,7 +64,7 @@ def browser_search():
               ?Producto ab:calidad ?calidad.
               ?Producto ab:precio ?precio
             }
-            """ % filterSPARQLValues("?id", request.form.getlist('items'), False)
+            """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", request.form.getlist('items'), False)
 
     res = AgentUtil.SPARQLHelper.read_query(query)
     return render_template('buy.html', products=res)
