@@ -10,6 +10,8 @@ VENDEDOR_PORT = 9030
 CENTROLOG_PORT = 9040
 TRANSPORTISTA_PORT = 9050
 
+NUM_TRANSPORTISTAS = 2
+
 hostname = socket.gethostname()
 endpoint = 'http://localhost:5820/myDB/query'
 

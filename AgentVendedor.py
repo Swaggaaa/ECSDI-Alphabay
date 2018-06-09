@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Ejemplo de agente para implementar los vuestros.
-
 @author: Swaggaaa
 """
 
@@ -13,13 +11,15 @@ from rdflib import Namespace, Graph, RDF, URIRef, Literal
 from flask import Flask, request, render_template
 import SPARQLWrapper
 from rdflib.namespace import FOAF
-
+import random
 import AgentUtil
 from AgentUtil.ACLMessages import build_message, send_message
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Logging import config_logger
 import AgentUtil.Agents
+from datetime import datetime, date, time, timedelta
+import calendar
 
 # Para el sleep
 import time
@@ -53,8 +53,8 @@ def browser_search():
 
 SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_modelo) (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio) (COUNT(*) AS ?disponibilidad)
           WHERE 
-          {
-              %s
+          {   
+              %s  
               ?Producto ab:n_ref ?n_ref.
               ?Producto ab:nombre ?nombre.
               ?Producto ab:modelo ?modelo.
@@ -98,44 +98,111 @@ def browser_refund():
         query = """
                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
-                          SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) 
-                                        (SAMPLE(?modelo) AS ?n_ref_modelo) 
-                                        (SAMPLE(?precio) AS ?n_ref_precio) 
-                                        (COUNT(*) AS ?cantidad)
+                          SELECT ?compuesto_por
                           WHERE 
                           {
+                              ?Pedido ab:comprado_por ?comprado_por.
+                              ?Pedido ab:compuesto_por ?compuesto_por.
+                             
+                          """
+        #TODO: Cambiar Elena por el nombre de usuario
+        query += "FILTER regex (str(?comprado_por), 'Elena').}"
+
+        sparql.setQuery(query)
+        res = sparql.query().convert()
+        refs = []
+
+        for ref in res["results"]["bindings"]:
+            refs.append(ref['compuesto_por']['value'])
+
+        query = """
+                           prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+        
+                          SELECT ?id ?n_ref ?nombre ?modelo ?precio 
+                          WHERE 
+                          {
+                                %s
+                              ?Producto ab:id ?id.
                               ?Producto ab:n_ref ?n_ref.
                               ?Producto ab:nombre ?nombre.
                               ?Producto ab:modelo ?modelo.
                               ?Producto ab:precio ?precio.
-                              ?Producto ab:comprado_por ?comprado_por.
-                          """
-        #TODO: Cambiar Elena por el nombre de usuario
-        query += "FILTER regex (str(?comprado_por), 'Elena')."
-        query += "} GROUP BY ?n_ref"
+                              
+                          
+        } """ % filterSPARQLValues("?id", refs, False)
 
         sparql.setQuery(query)
         res = sparql.query().convert()
-
-        try:
-            res["results"]["bindings"][0]["n_ref"]
-        except KeyError:
-            del res["results"]["bindings"][0]
 
         return render_template("refund.html", products=res, host_vendedor=(
                 AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
 
     else:
+
+
         if request.form["motivo"] != 'Not satisfied':
-            return render_template("resolution.html", resolution="Your request have been accepted", host_vendedor=(
+            query = """
+                 prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                 
+                        DELETE {?Producto ab:comprado_por 'Elena'}
+                        WHERE {?Producto ab:id request.form['item']}  """
+            #TODO: Cambiar Elena por el nombre de usuario
+
+            sparql.setQuery(query)
+
+            return render_template("resolution.html", resolution="Your request has been accepted. The transport company in charge of the devoution is %s" %escoger_transportista(), host_vendedor=(
                 AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
             ))
 
+        else:
+            fecha_actual = datetime.now()
+
+            query =  """
+                prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                
+                SELECT ?fecha_entrega
+                WHERE{
+                    ?Pedido ab:fecha_entrega ?fecha_entrega .
+                    ?Pedido ab:compuesto_por ?compuesto_por .
+                    """
+            query += "FILTER regex (str(?compuesto_por), '%s')." % request.form['item']
+            query += "}"
+
+            sparql.setQuery(query)
+            res = sparql.query().convert()
+
+            fecha_entrega = res["results"]["bindings"][0]["fecha_entrega"]["value"]
+            fecha_entrega = datetime.strptime(fecha_entrega,   "%Y-%m-%d %H:%M:%S.%f")
+            dias_pasados= fecha_actual - fecha_entrega
+
+            if dias_pasados.days <= 15:
+                return render_template("resolution.html",
+                                       resolution="Your request has been accepted. The transport company in charge of the devoution is %s" % escoger_transportista(),
+                                       host_vendedor=(
+                                               AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                       ))
+            else:
+                return render_template("resolution.html",
+                                        resolution="Your request has not been accepted because it has been %s days since you have received the product" %dias_pasados.days,
+                                        host_vendedor=(
+                        AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                ))
 
 
 
+def escoger_transportista():
+    query = """
+            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
+                    SELECT ?transportista
+                    WHERE {?Empresa_de_transporte ab:transportista ?transportista }"""
 
+    sparql.setQuery(query)
+    res = sparql.query().convert()
+
+    i = random.randint(0, AgentUtil.Agents.NUM_TRANSPORTISTAS)
+    transportista = res["results"]["bindings"][i-1]["transportista"]["value"]
+    return transportista
 
 
 
