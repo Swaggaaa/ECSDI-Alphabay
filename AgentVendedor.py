@@ -6,6 +6,8 @@ Ejemplo de agente para implementar los vuestros.
 """
 
 from __future__ import print_function
+
+import random
 from multiprocessing import Process, Queue
 import socket
 
@@ -26,6 +28,7 @@ import time
 
 from AgentUtil.OntoNamespaces import ACL, AB
 from AgentUtil.SPARQLHelper import filterSPARQLValues
+from models.Pedido import Pedido
 
 __author__ = 'Swaggaaa'
 
@@ -51,44 +54,102 @@ def browser_search():
     query = """
            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
-SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_modelo) (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio) (COUNT(*) AS ?disponibilidad)
+          SELECT ?n_ref (SAMPLE(?id) AS ?n_ref_id) (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_modelo)
+         (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio)
           WHERE 
           {
               %s
+              ?Producto ab:id ?id.
               ?Producto ab:n_ref ?n_ref.
               ?Producto ab:nombre ?nombre.
               ?Producto ab:modelo ?modelo.
               ?Producto ab:calidad ?calidad.
               ?Producto ab:precio ?precio
             }
-            GROUP BY (?n_ref)
-            """ % filterSPARQLValues("?n_ref", request.form.getlist('items'), False)
+            """ % filterSPARQLValues("?id", request.form.getlist('items'), False)
 
     sparql.setQuery(query)
     res = sparql.query().convert()
     return render_template('buy.html', products=res)
 
 
-@app.route("/purchase", methods=['POST'])
+@app.route("/purchase", methods=['GET', 'POST'])
 def browser_purchase():
-    global mss_cnt
-    gmess = Graph()
-    gmess.bind('ab', AB)
-    content = AB[AgentUtil.Agents.AgenteVendedor.name + '-preparar-pedido']
-    gmess.add((content, RDF.type, AB.Pedido))
-    gmess.add((content, AB.id, Literal(123)))
-    gmess.add((content, AB.prioridad, Literal(request.form['prioridad'])))
-    gmess.add((content, AB.fecha_compra, Literal(time.strftime("%d/%m/%Y"))))
-    gmess.add((content, AB.direccion, Literal(request.form['direccion'])))
-    gmess.add((content, AB.compuesto_por, Literal(AB['Sneakers_Nike'])))
-    gmess.add((content, AB.compuesto_por, Literal(AB["Levi's_Jeans_1"])))
-    msg = build_message(gmess, perf=ACL.inform,
-                        sender=AgentUtil.Agents.AgenteVendedor.uri,
-                        receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
-                        content=content,
-                        msgcnt=mss_cnt)
-    send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
-    mss_cnt += 1
+    if request.method == 'POST':
+        global mss_cnt
+        peso_total = 0.0
+        query = """
+        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+             
+        SELECT ?id ?peso
+        WHERE
+        {
+          %s
+          ?Producto ab:id ?id .
+          ?Producto ab:peso ?peso .
+          }
+          """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", request.form['items'], False)
+
+        sparql.setQuery(query)
+        res = sparql.query().convert()
+
+        pedido = Pedido()
+        pedido.id = random.randint(1, 99999999)  # TODO: Get latest id
+        pedido.prioridad = request.form['prioridad']
+        pedido.fecha_compra = time.strftime("%d/%m/%Y")
+        pedido.direccion = request.form['direccion']
+        pedido.ciudad = request.form['ciudad']
+
+        for item in request.form['items']:
+            pedido.compuesto_por.append(item)
+
+        for p in res["results"]["bindings"]:
+            peso_total += float(p["peso"]["value"])
+
+        pedido.peso_total = peso_total
+
+        query = """
+        
+        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+             
+        INSERT DATA {
+             ab:pedido%(id)s ab:id %(id)s .
+             ab:pedido%(id)s ab:prioridad '%(prioridad)s' .
+             ab:pedido%(id)s ab:fecha_compra '%(fecha)s' .
+             ab:pedido%(id)s ab:direccion '%(dir)s' .
+             ab:pedido%(id)s ab:ciudad '%(ciudad)s' .
+             ab:pedido%(id)s ab:peso_total %(peso)s .
+        """ % {'id': pedido.id, 'prioridad': pedido.prioridad, 'fecha': pedido.fecha_compra, 'dir': pedido.direccion,
+               'ciudad': pedido.ciudad, 'peso': pedido.peso_total}
+
+        for item in pedido.compuesto_por:
+            query += "ab:pedido%(id)s ab:compuesto_por %(item)s" % {'id': pedido.id, 'item': item}
+
+        sparql.setQuery(query)
+        res = sparql.query().convert()
+
+        gmess = Graph()
+        gmess.bind('ab', AB)
+        content = AB[AgentUtil.Agents.AgenteVendedor.name + '-preparar-pedido']
+        gmess.add((content, RDF.type, AB.Pedido))
+        gmess.add((content, AB.id, Literal(pedido.id)))
+        gmess.add((content, AB.prioridad, Literal(pedido.prioridad)))
+        gmess.add((content, AB.fecha_compra, Literal(pedido.fecha_compra)))
+        gmess.add((content, AB.direccion, Literal(pedido.direccion)))
+        gmess.add((content, AB.ciudad, Literal(pedido.ciudad)))
+        for item in pedido.compuesto_por:
+            gmess.add((content, AB.compuesto_por, Literal(item)))
+
+        gmess.add((content, AB.peso_total, peso_total))
+        msg = build_message(gmess, perf=ACL.inform,
+                            sender=AgentUtil.Agents.AgenteVendedor.uri,
+                            receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                            content=content,
+                            msgcnt=mss_cnt)
+        send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
+        mss_cnt += 1
+
+        render_template('finished.html', products=res)
 
 
 @app.route("/refund", methods=['GET', 'POST'])
@@ -110,7 +171,7 @@ def browser_refund():
                               ?Producto ab:precio ?precio.
                               ?Producto ab:comprado_por ?comprado_por.
                           """
-        #TODO: Cambiar Elena por el nombre de usuario
+        # TODO: Cambiar Elena por el nombre de usuario
         query += "FILTER regex (str(?comprado_por), 'Elena')."
         query += "} GROUP BY ?n_ref"
 
@@ -128,15 +189,8 @@ def browser_refund():
     else:
         if request.form["motivo"] != 'Not satisfied':
             return render_template("resolution.html", resolution="Your request have been accepted", host_vendedor=(
-                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                    AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
             ))
-
-
-
-
-
-
-
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
