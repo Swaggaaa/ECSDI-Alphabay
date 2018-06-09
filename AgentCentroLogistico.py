@@ -6,27 +6,26 @@ Ejemplo de agente para implementar los vuestros.
 """
 
 from __future__ import print_function
-from multiprocessing import Process, Queue
-import socket
 
-from rdflib import Namespace, Graph, RDF, URIRef, Literal
-from rdflib import Namespace, Graph, RDF, URIRef
-from flask import Flask, request, render_template
-import SPARQLWrapper
-from rdflib.namespace import FOAF
-
-import AgentUtil
-from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
-from AgentUtil.FlaskServer import shutdown_server
-from AgentUtil.Agent import Agent
-from AgentUtil.Logging import config_logger
-import AgentUtil.Agents
-
+import random
 # Para el sleep
 import time
+from multiprocessing import Process, Queue
 
+from flask import Flask, request, render_template
+from rdflib import Graph
+from rdflib import Literal
+
+import AgentUtil
+import AgentUtil.Agents
+import AgentUtil.SPARQLHelper
+from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
+from AgentUtil.FlaskServer import shutdown_server
+from AgentUtil.Logging import config_logger
 from AgentUtil.OntoNamespaces import ACL, AB
-from AgentUtil.SPARQLHelper import filterSPARQLValues
+from models.Lote import Lote
+from models.Oferta import Oferta
+from models.Pedido import Pedido
 
 __author__ = 'Swaggaaa'
 
@@ -36,7 +35,7 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
-sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
+
 
 logger = config_logger(level=1)
 
@@ -44,6 +43,15 @@ cola1 = Queue()
 
 # Flask stuff
 app = Flask(__name__)
+
+# Contador de respuestas
+num_respuestas = 0
+
+# Mejor oferta hasta ahora
+best_offer = None
+
+# Lotes en proceso de envío
+lotes_enviando = []
 
 
 @app.route("/buy", methods=['POST'])
@@ -63,10 +71,9 @@ SELECT ?n_ref (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS ?n_ref_mode
               ?Producto ab:precio ?precio
             }
             GROUP BY (?n_ref)
-            """ % filterSPARQLValues("?n_ref", request.form.getlist('items'), False)
+            """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", request.form.getlist('items'), False)
 
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+    res = AgentUtil.SPARQLHelper.read_query(query)
     return render_template('buy.html', products=res)
 
 
@@ -90,10 +97,13 @@ def browser_purchase():
 def comunicacion():
     global dsgraph
     global mss_cnt
+    global best_offer
+    global num_respuestas
 
     message = request.args['content']
     gm = Graph()
     gm.parse(data=message)
+    gr = None
 
     msgdic = get_message_properties(gm)
     if msgdic is None:
@@ -102,14 +112,35 @@ def comunicacion():
     else:
         perf = msgdic['performative']
 
-        if perf != ACL.inform:
-            gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
-                               msgcnt=mss_cnt)
-        else:
+        # Se nos solicita que enviemos los lotes de cierta prioridad
+        if perf == ACL.request:
             if 'content' in msgdic:
                 content = msgdic['content']
-                producto = gm.value(subject=content, predicate=RDF.type) # TODO: Get the proper values, not just the type!!
-                prepare_shipping(producto)
+
+                if 'enviar-lotes' in str(content):
+                    prioridad = gm.value(subject=content, predicate=AB.prioridad)
+
+                    # Enviamos los lotes del tipo que tocan
+                    enviar_lotes(prioridad)
+
+            else:
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                                   msgcnt=mss_cnt)
+
+        # Recibimos un pedido
+        elif perf == ACL.inform:
+            if 'content' in msgdic:
+                content = msgdic['content']
+                pedido = Pedido()
+                pedido.id = gm.value(subject=content, predicate=AB.id)
+                pedido.prioridad = gm.value(subject=content, predicate=AB.prioridad)
+                pedido.fecha_compra = gm.value(subject=content, predicate=AB.direccion)
+                pedido.compuesto_por = gm.value(subject=content, predicate=AB.compuesto_por)
+                pedido.peso_total = gm.value(subject=content, predicate=AB.peso_total)
+                pedido.direccion = gm.value(subject=content, predicate=AB.direccion)
+                pedido.ciudad = gm.value(subject=content, predicate=AB.ciudad)
+
+                prepare_shipping(pedido)
 
             gr = build_message(Graph(),
                                ACL['inform-done'],
@@ -117,29 +148,156 @@ def comunicacion():
                                msgcnt=mss_cnt,
                                receiver=msgdic['sender'], )
 
-            oferta = solicita_oferta()
-            # TODO: Negociacion
-            aceptar_oferta(oferta)
+        # Un transportista nos ha propuesto una oferta
+        elif perf == ACL.propose:
+            if 'content' in msgdic:
+                content = msgdic['content']
+                oferta = Oferta()
+                oferta.id = gm.value(subject=content, predicate=AB.id)
+                oferta.precio = gm.value(subject=content, predicate=AB.precio)
+                oferta.transportista = gm.value(subject=content, predicate=AB.transportista)
+
+                if best_offer is None or best_offer.precio > oferta.precio:
+                    best_offer = oferta
+
+                proponer_oferta(oferta)
+
+            else:
+                gr = build_message(Graph(),
+                                   ACL['inform-done'],
+                                   sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                                   msgcnt=mss_cnt,
+                                   receiver=msgdic['sender'], )
+
+        # Un transportista ha aceptado la contraoferta
+        elif perf == ACL.accept_proposal:
+            if 'content' in msgdic:
+                content = msgdic['content']
+                oferta = Oferta()
+                oferta.id = gm.value(subject=content, predicate=AB.id)
+                oferta.precio = gm.value(subject=content, predicate=AB.precio)
+                oferta.transportista = gm.value(subject=content, predicate=AB.transportista)
+
+                if best_offer is None or best_offer.precio > oferta.precio:
+                    best_offer = oferta
+
+                num_respuestas += 1
+                if num_respuestas == 2:
+                    aceptar_oferta(best_offer.transportista)
+                    best_offer = None
+                    num_respuestas = 0
+                    notificar_clientes()
+
+            else:
+                gr = build_message(Graph(),
+                                   ACL['inform-done'],
+                                   sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                                   msgcnt=mss_cnt,
+                                   receiver=msgdic['sender'])
+
+        # Un transportista nos ha negado la contraoferta
+        elif perf == ACL.reject_proposal:
+            if 'content' in msgdic:
+                content = msgdic['content']
+                num_respuestas += 1
+
+                # 2 proposed agents
+                if num_respuestas == 2:
+                    aceptar_oferta(best_offer.transportista)
+                    num_respuestas = 0
+                    best_offer = None
+                    notificar_clientes()
+
+            else:
+                gr = build_message(Graph(),
+                                   ACL['inform-done'],
+                                   sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                                   msgcnt=mss_cnt,
+                                   receiver=msgdic['sender'], )
+
+        else:
+            gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                               msgcnt=mss_cnt)
 
     mss_cnt += 1
     return gr.serialize(format='xml')
 
 
-def prepare_shipping(producto):
+def enviar_lotes(prioridad):
+    global lotes_enviando
+    # Obtenemos los lotes con la prioridad demandada
     query = """
- prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
-           
-           SELECT ?Lote ?id
-           WHERE
-            {
-           ?Lote rdf:type ab:Lote .
-           ?Lote ab:id ?id
-            }
-           """
-    sparql.setQuery(query)
-    res = sparql.query().convert()
+            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+            
+            SELECT ?id ?peso ?ciudad ?formado_por
+            WHERE {
+            ?Lote ab:id ?id .
+            ?Lote ab:prioridad ?prioridad .
+            ?Lote ab:peso ?peso .
+            ?Lote ab:ciudad_destino ?ciudad .
+            ?Lote ab:formado_por ?formado_por .
+            FILTER (regex(str(?prioridad), %s)     
+            """ % prioridad
 
-    if len(res["results"]["bindings"]) == 0:  # TODO: Valores reales
+    res = AgentUtil.SPARQLHelper.read_query(query)
+
+    if len(res["results"]["bindings"]) != 0:
+        # IDs a enviar
+        lotes = []
+        ids = []
+        for lote in res["results"]["bindings"]:
+            tmp = Lote()
+            tmp.id = lote["id"]["value"]
+            ids.append(tmp.id)
+            tmp.peso_total = lote["peso"]["value"]
+            tmp.ciudad_destino = lote["ciudad"]["value"]
+            tmp.prioridad = lote["prioridad"]["value"]
+            lotes.append(tmp)
+
+        query = """
+        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+        
+        DELETE
+         { ?Lote ?p ?v }
+         WHERE
+         {
+            %s
+            ?Lote ab:id ?id .
+            ?Lote ?p ?v 
+         }
+        """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", ids, False)
+
+        # Limpiamos los lotes con los nuevos a enviar
+        lotes_enviando = []
+
+        for lote in lotes:
+            lotes_enviando.append(lote)
+            solicita_oferta(lote)
+
+        # Eliminamos los lotes (es decir, los enviamos)
+        res = AgentUtil.SPARQLHelper.update_query(query)
+
+
+def prepare_shipping(pedido):
+    # Obtenemos los lotes existentes
+    query = """
+        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+             
+        SELECT ?id ?peso ?prioridad
+        WHERE {
+          ?Lote ab:id ?id .
+          ?Lote ab:ciudad_destino ?ciudad_destino .
+          ?Lote ab:peso ?peso .
+          ?Lote ab:prioridad ?prioridad .
+          FILTER (str(?ciudad_destino) = '%s' && str(?prioridad) = '%s')
+          }
+        """ % (pedido.ciudad, pedido.prioridad)
+
+    res = AgentUtil.SPARQLHelper.read_query(query)
+
+    # No existe ningún lote actualmente
+    if len(res["results"]["bindings"]) == 0:
+        id = random.randint(1, 999999999)
         query = """
          prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
            
@@ -149,46 +307,106 @@ def prepare_shipping(producto):
            ab:Lote%(loteid)s ab:peso %(peso)f .
            ab:Lote%(loteid)s ab:volumen %(vol)f .
            ab:Lote%(loteid)s ab:ciudad_destino %(ciudad)s .
-           ab:Lote%(loteid)s ab:formado_por %(uriProducto)s .}
-           """ % {'loteid': 1, 'id': 1, 'peso': 13.7, 'vol': 5.2, 'ciudad': 'Lloret', 'uriProducto': 'urifakeuri'}
-        sparql.setQuery(query)
-        sparql.query()  # Creamos un nuevo lote con el pedido
+           ab:Lote%(loteid)s ab:prioridad %(prioridad)s .
+           ab:Lote%(loteid)s ab:formado_por %(pedido)s .
+           """ % {'loteid': id, 'id': id, 'peso': pedido.peso_total, 'vol': pow(pedido.peso_total, 2),
+                  'ciudad': pedido.ciudad, 'prioridad': pedido.prioridad,
+                  'pedido': pedido.id}  # TODO: Quitar el random y la sick formula de volumen
+
+        res = AgentUtil.SPARQLHelper.update_query(query)
+
+    # Ya existen lotes, vamos a coger el más vacío con mismo destino
     else:
+        lote_elegido = res["results"]["bindings"][0]
+        for lote in res["results"]["bindings"]:
+            if lote_elegido["peso"]["value"] > lote["peso"]["value"]:
+                lote_elegido = lote
+
+        # Insertamos el pedido dentro del nuevo lote
         query = """
         prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
            
-           INSERT DATA {
-           ab:Lote%(loteid)s ab:formado_por %(uriProducto)s .}
-        """ % {'loteid': res["results"]["bindings"][0]["id"]["value"], 'uriProducto': 'urifakeuri'}
-        sparql.setQuery(query)
-        sparql.query()  # Insertamos el nuevo producto en el lote elegido
+           DELETE {
+                ?Lote ab:peso ?peso .
+                ?Lote ab:volumen ?volumen .
+                }
+           INSERT {
+                ?Lote ab:peso %s .
+                ?Lote ab:volumen %s .
+                }
+           WHERE {
+                ?Lote ab:id %s .
+                }
+        """ % ((float(lote_elegido["peso"]["value"]) + pedido.peso_total),
+               pow(float(lote_elegido["peso"]["value"]) + pedido.peso_total, 2),
+               lote_elegido["id"]["value"])
+
+        res = AgentUtil.SPARQLHelper.update_query(query)
 
 
-def solicita_oferta():
+def solicita_oferta(lote):
     global mss_cnt
     gmess = Graph()
     gmess.bind('ab', AB)
+    content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-solicitar-oferta']
+    gmess.add((content, AB.peso, lote.peso_total))
+    gmess.add((content, AB.ciudad, lote.ciudad_destino))
+    gmess.add((content, AB.prioridad, lote.prioridad))
+    gmess.add((content, AB.id, lote.id))
     msg = build_message(gmess, perf=ACL.request,
                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                         receiver=AgentUtil.Agents.AgenteTransportista.uri,
+                        content=content,
                         msgcnt=mss_cnt)
     res = send_message(msg, AgentUtil.Agents.AgenteTransportista.address)
+    msg2 = build_message(gmess, perf=ACL.request,
+                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                         receiver=AgentUtil.Agents.AgenteTransportista2.uri,
+                         content=content,
+                         msgcnt=mss_cnt)
+    res2 = send_message(msg, AgentUtil.Agents.AgenteTransportista2.address)
     message = get_message_properties(res)
     mss_cnt += 1
 
     return message
 
 
-def aceptar_oferta(oferta):
-    global mss_cont
+def proponer_oferta(oferta):
+    global mss_cnt
     gmess = Graph()
     gmess.bind('ab', AB)
-    msg = build_message(gmess, perf=ACL.accept - proposal,
+
+    nuevo_precio = oferta.precio - (oferta.precio / 5.0)
+    content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-proponer-oferta']
+    gmess.add((content, AB.id, Literal(oferta.id)))
+    gmess.add((content, AB.precio, Literal(nuevo_precio)))
+    msg = build_message(gmess, perf=ACL.propose,
                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
-                        receiver=AgentUtil.Agents.AgenteTransportista.uri,
+                        receiver=oferta.transportista.uri,
+                        content=content,
                         msgcnt=mss_cnt)
-    res = send_message(msg, AgentUtil.Agents.AgenteTransportista.address)
+
+    res = send_message(msg, oferta.transportista.address)
     mss_cnt += 1
+
+
+def aceptar_oferta(transportista):
+    global mss_cnt
+    gmess = Graph()
+    content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-aceptar-oferta']
+    msg = build_message(gmess, perf=ACL.accept_proposal,
+                        sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                        receiver=transportista.uri,
+                        content=content,
+                        msgcnt=mss_cnt)
+    res = send_message(msg, transportista.address)
+    mss_cnt += 1
+
+
+def notificar_clientes():
+    for lote in lotes_enviando:
+
+    pass
 
 
 # Para parar el agente. Por ahora no lo necesitaremos ya que se supone que están activos 24/7 skrra
@@ -206,27 +424,82 @@ def tidyup():
 
 # Esta función se ejecuta en bucle (a no ser que lo cambiéis) y es el comportamiento inicial del agente. Aquí podéis
 # mandar mensajes a los demás o hacer el trabajo que no requiera la petición de un agente
-def agentbehavior1(cola):
-    graph = cola.get()
+def economic_behavior():
+    global mss_cnt
     while True:
-        time.sleep(1)
+        # Cada 3 minutos (mock) enviamos un mensaje al agente de "Enviar lotes preparados"
+        gr = Graph()
+        gr.bind('ab', AB)
+        content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-enviar-lotes']
+        gr.add((content, AB.prioridad, 'economic'))
+        msg = build_message(gr, perf=ACL.request,
+                            sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                            receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                            content=content,
+                            msgcnt=mss_cnt)
+        send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
+        mss_cnt += 1
+        time.sleep(300)
         pass
+    pass
 
+
+def standard_behavior():
+    global mss_cnt
+    while True:
+        # Cada 3 minutos (mock) enviamos un mensaje al agente de "Enviar lotes preparados"
+        gr = Graph()
+        gr.bind('ab', AB)
+        content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-enviar-lotes']
+        gr.add((content, AB.prioridad, 'standard'))
+        msg = build_message(gr, perf=ACL.request,
+                            sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                            receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                            content=content,
+                            msgcnt=mss_cnt)
+        send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
+        mss_cnt += 1
+        time.sleep(300)
+        pass
+    pass
+
+
+def express_behavior():
+    global mss_cnt
+    while True:
+        # Cada 3 minutos (mock) enviamos un mensaje al agente de "Enviar lotes preparados"
+        gr = Graph()
+        gr.bind('ab', AB)
+        content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-enviar-lotes']
+        gr.add((content, AB.prioridad, 'express'))
+        msg = build_message(gr, perf=ACL.request,
+                            sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                            receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                            content=content,
+                            msgcnt=mss_cnt)
+        send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
+        mss_cnt += 1
+        time.sleep(300)
+        pass
     pass
 
 
 if __name__ == '__main__':
     # Nos conectamos al StarDog
-    sparql.setCredentials(user='admin', passwd='admin')
-    sparql.setReturnFormat(SPARQLWrapper.JSON)
 
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
+    ab1 = Process(target=economic_behavior)
     ab1.start()
+    ab2 = Process(target=standard_behavior)
+    ab2.start()
+    ab3 = Process(target=express_behavior)
+    ab3.start()
 
     # Ponemos en marcha el servidor
     app.run(host=AgentUtil.Agents.hostname, port=AgentUtil.Agents.CENTROLOG_PORT)
 
     # Esperamos a que acaben los behaviors
     ab1.join()
+    ab2.join()
+    ab3.join()
     print('The End')
