@@ -17,6 +17,7 @@ from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Logging import config_logger
 import AgentUtil.Agents
+import AgentUtil.SPARQLHelper
 
 # Para el sleep
 import time
@@ -30,8 +31,6 @@ mss_cnt = 0
 
 # Global triplestore graph
 dsgraph = Graph()
-
-sparql = SPARQLWrapper.SPARQLWrapper(AgentUtil.Agents.endpoint)
 
 logger = config_logger(level=1)
 
@@ -90,8 +89,7 @@ def browser_search():
 
         query += "} GROUP BY ?n_ref"
 
-        sparql.setQuery(query)
-        res = sparql.query().convert()
+        res = AgentUtil.SPARQLHelper.read_query(query)
 
         try:
             res["results"]["bindings"][0]["n_ref"]
@@ -136,10 +134,6 @@ def agentbehavior1(cola):
 
 
 if __name__ == '__main__':
-    # Nos conectamos al StarDog
-    sparql.setCredentials(user='admin', passwd='admin')
-    sparql.setReturnFormat(SPARQLWrapper.JSON)
-
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
     ab1 = Process(target=agentbehavior1, args=(cola1,))
     ab1.start()
