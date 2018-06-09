@@ -6,6 +6,8 @@ Ejemplo de agente para implementar los vuestros.
 """
 
 from __future__ import print_function
+
+import logging
 from multiprocessing import Process, Queue
 import socket
 
@@ -32,6 +34,8 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 logger = config_logger(level=1)
 
 cola1 = Queue()

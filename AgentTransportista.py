@@ -7,6 +7,7 @@ Ejemplo de agente para implementar los vuestros.
 
 from __future__ import print_function
 
+import logging
 import random
 from multiprocessing import Process, Queue
 import socket
@@ -39,6 +40,8 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 logger = config_logger(level=1)
 
 cola1 = Queue()
@@ -86,6 +89,8 @@ def comunicacion():
                     elif str(lote.prioridad) == 'standard':
                         precio += 3.0
 
+                    logger.info("[#] Percepcion - Solicitan oferta y ofrecemos un precio de: %s" % precio)
+
                     gmess = Graph()
                     gmess.bind('ab', AB)
                     content = AB[AgentUtil.Agents.AgenteTransportista.name + '-proponer-oferta']
@@ -108,18 +113,30 @@ def comunicacion():
                     oferta = Oferta()
                     oferta.id = gm.value(subject=content, predicate=AB.id)
                     oferta.precio = gm.value(subject=content, predicate=AB.precio)
+                    oferta.transportista = gm.value(subject=content, predicate=AB.transportista)
+
+                    gmess = Graph()
+                    gmess.bind('ab', AB)
 
                     decision = random.randint(0, 2)
                     if decision == 0:
+                        logger.info("[#] Percepcion - Nos proponen contraoferta y la aceptamos!")
                         content = AB[AgentUtil.Agents.AgenteTransportista.name + '-aceptar-oferta']
-                        msg = build_message(gm, perf=ACL.accept_proposal,
+                        gmess.add((content, AB.id, Literal(oferta.id)))
+                        gmess.add((content, AB.precio, Literal(oferta.precio)))
+                        gmess.add((content, AB.transportista, Literal(oferta.transportista)))
+                        msg = build_message(gmess, perf=ACL.accept_proposal,
                                             sender=AgentUtil.Agents.AgenteTransportista.uri,
                                             receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
                                             content=content,
                                             msgcnt=mss_cnt)
                     elif decision == 1:
+                        logger.info("[#] Percepcion - Nos proponen contraoferta y la rechazamos! >:(")
                         content = AB[AgentUtil.Agents.AgenteTransportista.name + '-rechazar-oferta']
-                        msg = build_message(gm, perf=ACL.reject_proposal,
+                        gmess.add((content, AB.id, Literal(oferta.id)))
+                        gmess.add((content, AB.precio, Literal(oferta.precio)))
+                        gmess.add((content, AB.transportista, Literal(oferta.transportista)))
+                        msg = build_message(gmess, perf=ACL.reject_proposal,
                                             sender=AgentUtil.Agents.AgenteTransportista.uri,
                                             receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
                                             content=content,
@@ -130,13 +147,16 @@ def comunicacion():
                         nueva_oferta.precio = float(oferta.precio) + float(oferta.precio) * 0.05
                         nueva_oferta.transportista = oferta.transportista
 
+                        logger.info("[#] Percepcion - Nos proponen contraoferta y la modificamos de %s a %s euros!" %
+                                    (oferta.precio, nueva_oferta.precio))
+
                         gmess = Graph()
                         gmess.bind('ab', AB)
-                        content = AB[AgentUtil.Agents.AgenteTransportista.name + '-proponer-oferta']
+                        content = AB[AgentUtil.Agents.AgenteTransportista.name + '-informar-oferta-final']
                         gmess.add((content, AB.id, Literal(nueva_oferta.id)))
                         gmess.add((content, AB.precio, Literal(nueva_oferta.precio)))
                         gmess.add((content, AB.transportista, Literal(nueva_oferta.transportista)))
-                        msg = build_message(gmess, perf=ACL.propose,
+                        msg = build_message(gmess, perf=ACL.inform,
                                             sender=AgentUtil.Agents.AgenteTransportista.uri,
                                             receiver=AgentUtil.Agents.AgenteCentroLogistico.uri,
                                             content=content,

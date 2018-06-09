@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 
+import logging
 import random
 from multiprocessing import Process, Queue
 import socket
@@ -39,6 +40,8 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 logger = config_logger(level=1)
 
 cola1 = Queue()
@@ -77,9 +80,12 @@ def comunicacion():
                     transportista = gm.value(subject=content, predicate=AB.transportista)
 
                     logger.info("[#] Percepcion - Debemos notificar a los usuarios de sus pedidos enviados!")
-                    logger.info("[#] Notificando a %s usuarios" % len(ids))
-                    for id in ids:
-                        notificar_usuario(id, transportista)
+                    logger.info("[#] Han sido enviados %s pedidos" % (1 if not isinstance(ids, list) else len(ids)))
+                    if isinstance(ids, list):
+                        for id in ids:
+                            notificar_usuario(id, transportista)
+                    else:
+                        notificar_usuario(ids, transportista)
 
             else:
                 gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
@@ -96,11 +102,12 @@ def notificar_usuario(id, transportista):
     query = """
        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
        
-       SELECT ?fecha_compra ?prioridad
+       SELECT ?fecha_compra ?prioridad ?usuario
        WHERE {
             ?Pedido ab:fecha_compra ?fecha_compra .
             ?Pedido ab:id ?id .
             ?Pedido ab:prioridad ?prioridad .
+            ?Pedido ab:comprado_por ?usuario .
             FILTER (?id = %s) }
     """ % id
 
@@ -108,16 +115,25 @@ def notificar_usuario(id, transportista):
 
     fecha_compra = res["results"]["bindings"][0]["fecha_compra"]["value"]
     prioridad = res["results"]["bindings"][0]["prioridad"]["value"]
-    fecha_entrega = fecha_compra
+    usuario = res["results"]["bindings"][0]["usuario"]["value"]
+    fecha_entrega = datetime.strptime(fecha_compra, "%d/%m/%Y")
+    if str(prioridad) == 'express':
+        fecha_entrega += timedelta(days=1)
+    elif str(prioridad) == 'standard':
+        fecha_entrega += timedelta(days=3)
+    else:
+        fecha_entrega += timedelta(days=5)
 
     query = """
    prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
    
    INSERT DATA {
-        ab:Pedido%(id)s ab:fecha_entrega %(fecha)s .
-        ab:Pedido%(id)s ab:es_entregado_por %(transportista)s .
+        ab:Pedido%(id)s ab:fecha_entrega '%(fecha)s' .
+        ab:Pedido%(id)s ab:es_entregado_por '%(transportista)s' .
         }
     """ % {'id': id, 'fecha': fecha_entrega, 'transportista': transportista}
+
+    logger.info("[#] El usuario '%s' ha sido notificado del envio de su pedido" % usuario)
 
     res = AgentUtil.SPARQLHelper.read_query(query)
 
@@ -203,7 +219,7 @@ def browser_purchase():
 
         res = AgentUtil.SPARQLHelper.update_query(query)
 
-        logger.info("[#] Creado un nuevo pedido (%s)" % pedido.id)
+        logger.info("[#] Creado un nuevo pedido (%s) de productos: %s" % (pedido.id, pedido.compuesto_por))
 
         gmess = Graph()
         gmess.bind('ab', AB)

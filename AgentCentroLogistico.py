@@ -7,6 +7,7 @@ Ejemplo de agente para implementar los vuestros.
 
 from __future__ import print_function
 
+import logging
 import random
 # Para el sleep
 import time
@@ -35,6 +36,8 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 logger = config_logger(level=1)
 
 cola1 = Queue()
@@ -129,22 +132,51 @@ def comunicacion():
                 gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                                    msgcnt=mss_cnt)
 
-        # Recibimos un pedido
+
         elif perf == ACL.inform:
             if 'content' in msgdic:
                 content = msgdic['content']
-                pedido = Pedido()
-                pedido.id = gm.value(subject=content, predicate=AB.id)
-                pedido.prioridad = gm.value(subject=content, predicate=AB.prioridad)
-                pedido.fecha_compra = gm.value(subject=content, predicate=AB.direccion)
-                pedido.compuesto_por = gm.value(subject=content, predicate=AB.compuesto_por)
-                pedido.peso_total = gm.value(subject=content, predicate=AB.peso_total)
-                pedido.direccion = gm.value(subject=content, predicate=AB.direccion)
-                pedido.ciudad = gm.value(subject=content, predicate=AB.ciudad)
 
-                logger.info("[#] Percepcion - Organizar nuevo pedido (%s) " % pedido.id)
+                # Contra-oferta final
+                if 'informar-oferta-final' in str(content):
+                    oferta = Oferta()
+                    oferta.id = gm.value(subject=content, predicate=AB.id)
+                    oferta.precio = gm.value(subject=content, predicate=AB.precio)
+                    oferta.transportista = gm.value(subject=content, predicate=AB.transportista)
 
-                prepare_shipping(pedido)
+                    logger.info("[#] Percepcion - Transportista nos hace oferta final (%s) de %s euros"
+                                % (oferta.id, oferta.precio))
+
+                    nombre_transportista = 'SEUR' if msgdic['sender'] == AgentUtil.Agents.AgenteTransportista.uri \
+                        else 'CORREOS'
+
+                    if best_offer is None or best_offer.precio > oferta.precio:
+                        logger.info("[#] Nueva mejor oferta | id: %s | precio: %s | transportista %s" %
+                                    (oferta.id, oferta.precio, nombre_transportista))
+                        best_offer = oferta
+                        best_offer.transportista = nombre_transportista
+
+                    num_respuestas += 1
+                    if num_respuestas == 2:
+                        aceptar_oferta(best_offer.transportista)
+                        notificar_envios(best_offer.transportista)
+                        best_offer = None
+                        num_respuestas = 0
+
+                else:
+                    # Recibimos un pedido
+                    pedido = Pedido()
+                    pedido.id = gm.value(subject=content, predicate=AB.id)
+                    pedido.prioridad = gm.value(subject=content, predicate=AB.prioridad)
+                    pedido.fecha_compra = gm.value(subject=content, predicate=AB.direccion)
+                    pedido.compuesto_por = gm.value(subject=content, predicate=AB.compuesto_por)
+                    pedido.peso_total = gm.value(subject=content, predicate=AB.peso_total)
+                    pedido.direccion = gm.value(subject=content, predicate=AB.direccion)
+                    pedido.ciudad = gm.value(subject=content, predicate=AB.ciudad)
+
+                    logger.info("[#] Percepcion - Organizar nuevo pedido (%s) " % pedido.id)
+
+                    prepare_shipping(pedido)
 
             gr = build_message(Graph(),
                                ACL['inform-done'],
@@ -162,9 +194,14 @@ def comunicacion():
                 oferta.transportista = gm.value(subject=content, predicate=AB.transportista)
 
                 logger.info("[#] Percepcion - Nueva oferta (%s)" % oferta.id)
+                nombre_transportista = 'SEUR' if msgdic['sender'] == AgentUtil.Agents.AgenteTransportista.uri \
+                    else 'CORREOS'
 
                 if best_offer is None or best_offer.precio > oferta.precio:
+                    logger.info("[#] Nueva mejor oferta | id: %s | precio: %s | transportista %s" %
+                                (oferta.id, oferta.precio, nombre_transportista))
                     best_offer = oferta
+                    best_offer.transportista = nombre_transportista
 
                 proponer_oferta(oferta)
 
@@ -186,8 +223,14 @@ def comunicacion():
 
                 logger.info("[#] Percepcion - Contraoferta aceptada (%s)" % oferta.id)
 
+                nombre_transportista = 'SEUR' if msgdic['sender'] == AgentUtil.Agents.AgenteTransportista.uri \
+                    else 'CORREOS'
+
                 if best_offer is None or best_offer.precio > oferta.precio:
+                    logger.info("[#] Nueva mejor oferta | id: %s | precio: %s | transportista %s" %
+                                (oferta.id, oferta.precio, nombre_transportista))
                     best_offer = oferta
+                    best_offer.transportista = nombre_transportista
 
                 num_respuestas += 1
                 if num_respuestas == 2:
@@ -387,16 +430,13 @@ def solicita_oferta(lote):
                          receiver=AgentUtil.Agents.AgenteTransportista2.uri,
                          content=content,
                          msgcnt=mss_cnt)
-    res2 = send_message(msg, AgentUtil.Agents.AgenteTransportista2.address)
-    message = get_message_properties(res)
+    res2 = send_message(msg2, AgentUtil.Agents.AgenteTransportista2.address)
     mss_cnt += 1
-
-    return message
 
 
 def proponer_oferta(oferta):
     global mss_cnt
-    oferta.transportista = AgentUtil.Agents.AgenteTransportista if str(oferta.transportista) == 'SEUR' else \
+    transportista = AgentUtil.Agents.AgenteTransportista if str(oferta.transportista) == 'SEUR' else \
         AgentUtil.Agents.AgenteTransportista2
 
     gmess = Graph()
@@ -412,17 +452,17 @@ def proponer_oferta(oferta):
 
     msg = build_message(gmess, perf=ACL.propose,
                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
-                        receiver=oferta.transportista.uri,
+                        receiver=transportista.uri,
                         content=content,
                         msgcnt=mss_cnt)
 
-    res = send_message(msg, oferta.transportista.address)
+    res = send_message(msg, transportista.address)
     mss_cnt += 1
 
 
 def aceptar_oferta(transportista):
     global mss_cnt
-    transportista = AgentUtil.Agents.AgenteTransportista if str(transportista) == 'SEUR' else \
+    transportista_agent = AgentUtil.Agents.AgenteTransportista if str(transportista) == 'SEUR' else \
         AgentUtil.Agents.AgenteTransportista2
     gmess = Graph()
     content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + '-aceptar-oferta']
@@ -431,17 +471,15 @@ def aceptar_oferta(transportista):
 
     msg = build_message(gmess, perf=ACL.accept_proposal,
                         sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
-                        receiver=transportista.uri,
+                        receiver=transportista_agent.uri,
                         content=content,
                         msgcnt=mss_cnt)
-    res = send_message(msg, transportista.address)
+    res = send_message(msg, transportista_agent.address)
     mss_cnt += 1
 
 
 def notificar_envios(transportista):
     global mss_cnt
-    transportista = AgentUtil.Agents.AgenteTransportista if str(transportista) == 'SEUR' else \
-        AgentUtil.Agents.AgenteTransportista2
     pedidos = []
     for lote in lotes_enviando:
         query = """
@@ -547,7 +585,7 @@ def express_behavior():
                             msgcnt=mss_cnt)
         send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
         mss_cnt += 1
-        time.sleep(6000)
+        time.sleep(60)
         pass
     pass
 
@@ -556,18 +594,18 @@ if __name__ == '__main__':
     # Nos conectamos al StarDog
 
     # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
-    #ab1 = Process(target=economic_behavior)
-    #ab1.start()
+    ab1 = Process(target=economic_behavior)
+    ab1.start()
     ab2 = Process(target=standard_behavior)
     ab2.start()
-    #ab3 = Process(target=express_behavior)
-    #ab3.start()
+    ab3 = Process(target=express_behavior)
+    ab3.start()
 
     # Ponemos en marcha el servidor
     app.run(host=AgentUtil.Agents.hostname, port=AgentUtil.Agents.CENTROLOG_PORT)
 
     # Esperamos a que acaben los behaviors
-    #ab1.join()
+    # ab1.join()
     ab2.join()
-    #ab3.join()
+    # ab3.join()
     print('The End')
