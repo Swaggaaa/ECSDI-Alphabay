@@ -44,7 +44,7 @@ app = Flask(__name__)
 def browser_search():
     global dsgraph
     if request.method == 'GET':
-        return render_template('addProduct.html')
+        return render_template('add_product.html')
     else:
         query = """
         
@@ -52,13 +52,13 @@ def browser_search():
           
           SELECT (MAX(?id) as ?maxid)
           WHERE{
+                ?Producto rdf:type ab:Producto .
                 ?Producto ab:id ?id.
           }
                                        
             """
 
         res = AgentUtil.SPARQLHelper.read_query(query)
-        print(res["results"]["bindings"][0]["maxid"]["value"])
 
         try:
             res["results"]["bindings"][0]["maxid"]["value"]
@@ -93,10 +93,9 @@ def browser_search():
                                    'peso': float(request.form["peso"]), 'vendido_por': '"' + request.form["vendido_por"] + '"',
                                    'calidad': '"' + request.form["calidad"] + '"'}
 
-                print("ESTA ES LA QUERY " + query)
                 res = AgentUtil.SPARQLHelper.update_query(query)
 
-        return render_template("addProductOk.html", host_evaluador=(
+        return render_template("add_product_ok.html", host_evaluador=(
                     AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)))
 
 
