@@ -35,8 +35,6 @@ mss_cnt = 0
 # Global triplestore graph
 dsgraph = Graph()
 
-
-
 logger = config_logger(level=1)
 
 cola1 = Queue()
@@ -184,9 +182,9 @@ def comunicacion():
                 num_respuestas += 1
                 if num_respuestas == 2:
                     aceptar_oferta(best_offer.transportista)
+                    notificar_envios(best_offer.transportista)
                     best_offer = None
                     num_respuestas = 0
-                    notificar_clientes()
 
             else:
                 gr = build_message(Graph(),
@@ -204,9 +202,9 @@ def comunicacion():
                 # 2 proposed agents
                 if num_respuestas == 2:
                     aceptar_oferta(best_offer.transportista)
+                    notificar_envios(best_offer.transportista)
                     num_respuestas = 0
                     best_offer = None
-                    notificar_clientes()
 
             else:
                 gr = build_message(Graph(),
@@ -403,10 +401,39 @@ def aceptar_oferta(transportista):
     mss_cnt += 1
 
 
-def notificar_clientes():
+def notificar_envios(transportista):
+    global mss_cnt
+    pedidos = []
     for lote in lotes_enviando:
+        query = """
+             prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
 
-    pass
+             SELECT ?formado_por
+             WHERE
+             {
+                 ?Lote ab:id ?id .
+                 ?LOte ab:formado_por ?formado_por .
+                 FILTER (?id = %s)
+             }
+             """ % lote.id
+
+        res = AgentUtil.SPARQLHelper.read_query(query)
+        for pedido in res["results"]["bindings"]:
+            pedidos.append(pedido["formado_por"]["value"])
+
+    gmess = Graph()
+    content = AB[AgentUtil.Agents.AgenteCentroLogistico.name + "-notificar-envios"]
+    for pedido in pedidos:
+        gmess.add((content, AB.id, pedido.id))
+    gmess.add((content, AB.transportista, transportista))
+
+    msg = build_message(gmess, perf=ACL.inform,
+                        sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                        receiver=AgentUtil.Agents.AgenteVendedor.uri,
+                        content=content,
+                        msgcnt=mss_cnt)
+    res = send_message(msg, AgentUtil.Agents.AgenteVendedor.address)
+    mss_cnt += 1
 
 
 # Para parar el agente. Por ahora no lo necesitaremos ya que se supone que están activos 24/7 skrra

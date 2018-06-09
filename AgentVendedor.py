@@ -15,7 +15,7 @@ import SPARQLWrapper
 from rdflib.namespace import FOAF
 
 import AgentUtil
-from AgentUtil.ACLMessages import build_message, send_message
+from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
 from AgentUtil.FlaskServer import shutdown_server
 from AgentUtil.Agent import Agent
 from AgentUtil.Logging import config_logger
@@ -49,6 +49,78 @@ cola1 = Queue()
 
 # Flask stuff
 app = Flask(__name__)
+
+
+@app.route("/comm")
+def comunicacion():
+    global dsgraph
+    global mss_cnt
+    global best_offer
+    global num_respuestas
+
+    message = request.args['content']
+    gm = Graph()
+    gm.parse(data=message)
+    gr = None
+
+    msgdic = get_message_properties(gm)
+    if msgdic is None:
+        gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                           msgcnt=mss_cnt)
+    else:
+        perf = msgdic['performative']
+
+        # Se nos solicita que enviemos los lotes de cierta prioridad
+        if perf == ACL.inform:
+            if 'content' in msgdic:
+                content = msgdic['content']
+
+                if 'notificar-envios' in str(content):
+                    ids = gm.value(subject=content, predicate=AB.formado_por)
+                    transportista = gm.value(subject=content, predicate=AB.transportista)
+
+                    for id in ids:
+                        notificar_usuario(id, transportista)
+
+            else:
+                gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                                   msgcnt=mss_cnt)
+        else:
+            gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                               msgcnt=mss_cnt)
+
+    mss_cnt += 1
+    return gr.serialize(format='xml')
+
+
+def notificar_usuario(id, transportista):
+    query = """
+       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+       
+       SELECT ?fecha_compra ?prioridad
+       WHERE {
+            ?Pedido ab:fecha_compra ?fecha_compra .
+            ?Pedido ab:id ?id .
+            ?Pedido ab:prioridad ?prioridad .
+            FILTER (?id = %s) }
+    """ % id
+
+    res = AgentUtil.SPARQLHelper.read_query(query)
+
+    fecha_compra = res["results"]["bindings"][0]["fecha_compra"]["value"]
+    prioridad = res["results"]["bindings"][0]["prioridad"]["value"]
+    fecha_entrega = fecha_compra
+
+    query = """
+   prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+   
+   INSERT DATA {
+        ab:Pedido%(id)s ab:fecha_entrega %(fecha)s .
+        ab:Pedido%(id)s ab:es_entregado_por %(transportista)s .
+        }
+    """ % {'id': id, 'fecha': fecha_entrega, 'transportista': transportista}
+
+    res = AgentUtil.SPARQLHelper.read_query(query)
 
 
 @app.route("/buy", methods=['POST'])
@@ -114,14 +186,16 @@ def browser_purchase():
         prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
              
         INSERT DATA {
-             ab:pedido%(id)s ab:id %(id)s .
-             ab:pedido%(id)s ab:prioridad '%(prioridad)s' .
-             ab:pedido%(id)s ab:fecha_compra '%(fecha)s' .
-             ab:pedido%(id)s ab:direccion '%(dir)s' .
-             ab:pedido%(id)s ab:ciudad '%(ciudad)s' .
-             ab:pedido%(id)s ab:peso_total %(peso)s .
+             ab:Pedido%(id)s rdf:type ab:Pedido .
+             ab:Pedido%(id)s ab:id %(id)s .
+             ab:Pedido%(id)s ab:prioridad '%(prioridad)s' .
+             ab:Pedido%(id)s ab:fecha_compra '%(fecha)s' .
+             ab:Pedido%(id)s ab:direccion '%(dir)s' .
+             ab:Pedido%(id)s ab:ciudad '%(ciudad)s' .
+             ab:Pedido%(id)s ab:peso_total %(peso)s .
+             ab:Pedido%(id)s ab:comprado_por '%(usuario)s' .
         """ % {'id': pedido.id, 'prioridad': pedido.prioridad, 'fecha': pedido.fecha_compra, 'dir': pedido.direccion,
-               'ciudad': pedido.ciudad, 'peso': pedido.peso_total}
+               'ciudad': pedido.ciudad, 'peso': pedido.peso_total, 'usuario': request.cookies.get('username')}
 
         for item in pedido.compuesto_por:
             query += "ab:pedido%(id)s ab:compuesto_por %(item)s" % {'id': pedido.id, 'item': item}

@@ -41,16 +41,27 @@ app = Flask(__name__)
 
 
 # Esto en verdad no es de este agente, pero lo ponemos aqui para poder tener el indice de paginas en algun lado
-@app.route("/login", methods=['GET', 'POST'])
+@app.route("/", methods=['GET', 'POST'])
 def login():
     global dsgraph
     if request.method == 'GET':
         return render_template("login.html")
     else:
-        resp = make_response(render_template("index.html"))
+        resp = make_response(render_template("index.html",
+                                             host_vendedor=AgentUtil.Agents.hostname + ':' + str(
+                                                 AgentUtil.Agents.VENDEDOR_PORT)))
         resp.set_cookie('username', request.form['user'])
         return resp
 
+@app.route("/info", methods={'GET'})
+def info():
+    global dsgraph
+    if request.method == 'GET':
+        query = """
+               prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                       
+                       
+        """
 
 @app.route("/search", methods=['GET', 'POST'])
 def browser_search():
