@@ -10,6 +10,7 @@ VENDEDOR_PORT = 9030
 CENTROLOG_PORT = 9040
 TRANSPORTISTA_PORT = 9050
 TRANSPORTISTA2_PORT = 9051
+REPRESENTANTE_PORT = 9060
 
 NUM_TRANSPORTISTAS = 2
 
@@ -41,3 +42,8 @@ AgenteTransportista2 = Agent('AgenteTransportista',
                              AB.AgenteTransportista2,
                              'http://%s:%d/comm' % (hostname, TRANSPORTISTA2_PORT),
                              'http://%s:%d/Stop' % (hostname, TRANSPORTISTA2_PORT))
+
+AgenteRepresentante = Agent('AgenteRepresentante',
+                              AB.AgenteRepresentante,
+                              'http://%s:%d/comm' % (hostname, REPRESENTANTE_PORT),
+                              'http://%s:%d/Stop' % (hostname, REPRESENTANTE_PORT))
