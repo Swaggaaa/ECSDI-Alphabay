@@ -86,6 +86,7 @@ def browser_search():
                                             ab:Producto%(productoid)s ab:peso %(peso)f .
                                             ab:Producto%(productoid)s ab:vendido_por %(vendido_por)s .
                                             ab:Producto%(productoid)s ab:calidad %(calidad)s .
+                                            ab:Producto%(productoid)s ab:estado 'Disponible' .
                                         }
                                             """ % {'productoid': id_product,
                                                    'id': id_product, 'modelo': '"' + request.form["modelo"] + '"',

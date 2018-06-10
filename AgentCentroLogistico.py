@@ -545,7 +545,7 @@ def economic_behavior():
                             msgcnt=mss_cnt)
         send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
         mss_cnt += 1
-        time.sleep(30000)
+        time.sleep(330)
         pass
     pass
 
@@ -565,7 +565,7 @@ def standard_behavior():
                             msgcnt=mss_cnt)
         send_message(msg, AgentUtil.Agents.AgenteCentroLogistico.address)
         mss_cnt += 1
-        time.sleep(18000)
+        time.sleep(150)
         pass
     pass
 

@@ -7,28 +7,20 @@ from __future__ import print_function
 
 import logging
 import random
-from multiprocessing import Process, Queue
-import socket
-
-from rdflib import Namespace, Graph, RDF, URIRef, Literal
-from flask import Flask, request, render_template, session
-import SPARQLWrapper
-from rdflib.namespace import FOAF
-
-import AgentUtil
-from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
-from AgentUtil.FlaskServer import shutdown_server
-from AgentUtil.Agent import Agent
-from AgentUtil.Logging import config_logger
-import AgentUtil.Agents
-from datetime import datetime, date, time, timedelta
-import calendar
-
 # Para el sleep
 import time
+from datetime import datetime, time, timedelta
+from multiprocessing import Process, Queue
 
+from flask import Flask, request, render_template, session
+from rdflib import Graph, RDF, Literal
+
+import AgentUtil
+import AgentUtil.Agents
+from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
+from AgentUtil.FlaskServer import shutdown_server
+from AgentUtil.Logging import config_logger
 from AgentUtil.OntoNamespaces import ACL, AB
-
 from AgentUtil.SPARQLHelper import filterSPARQLValues
 from models.Pedido import Pedido
 
@@ -129,13 +121,13 @@ def notificar_usuario(id, transportista):
    
    INSERT DATA {
         ab:Pedido%(id)s ab:fecha_entrega '%(fecha)s' .
-        ab:Pedido%(id)s ab:es_entregado_por '%(transportista)s' .
+        ab:Pedido%(id)s ab:es_transportado_por '%(transportista)s' .
         }
     """ % {'id': id, 'fecha': fecha_entrega, 'transportista': transportista}
 
     logger.info("[#] El usuario '%s' ha sido notificado del envio de su pedido" % usuario)
 
-    res = AgentUtil.SPARQLHelper.read_query(query)
+    res = AgentUtil.SPARQLHelper.update_query(query)
 
 
 @app.route("/buy", methods=['POST'])
@@ -218,6 +210,24 @@ def browser_purchase():
         query += " }"
 
         res = AgentUtil.SPARQLHelper.update_query(query)
+
+        query = """
+        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+        
+        DELETE {
+            ?Producto ab:estado ?estado
+        }
+        INSERT {
+            ?Producto ab:estado 'Vendido'
+        }
+        WHERE {
+            %s
+            ?Producto ab:estado ?estado .
+            ?Producto rdf:type ab:Producto .
+            ?Producto ab:id ?id .
+        """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", pedido.compuesto_por, False)
+
+        AgentUtil.SPARQLHelper.update_query(query)  # Los marcamos como vendidos para futuras busquedas
 
         logger.info("[#] Creado un nuevo pedido (%s) de productos: %s" % (pedido.id, pedido.compuesto_por))
 
@@ -343,8 +353,9 @@ def escoger_transportista():
     res = AgentUtil.SPARQLHelper.read_query(query)
 
     i = random.randint(1, AgentUtil.Agents.NUM_TRANSPORTISTAS)
-    transportista = res["results"]["bindings"][i-1]["transportista"]["value"]
+    transportista = res["results"]["bindings"][i - 1]["transportista"]["value"]
     return transportista
+
 
 def eliminar_producto_del_pediod():
     query = """
@@ -355,6 +366,7 @@ def eliminar_producto_del_pediod():
                                     ?Pedido ab:id ?id}""" % request.form['item']
 
     AgentUtil.SPARQLHelper.update_query(query)
+
 
 # Para parar el agente. Por ahora no lo necesitaremos ya que se supone que están activos 24/7 skrra
 @app.route("/Stop")

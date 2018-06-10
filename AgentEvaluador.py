@@ -24,6 +24,10 @@ import AgentUtil.SPARQLHelper
 # Para el sleep
 import time
 
+from models.InfoProducto import InfoProducto
+from models.Pedido import Pedido
+from models.Producto import Producto
+
 __author__ = 'Swaggaaa'
 
 # Contador de mensajes
@@ -63,6 +67,10 @@ def login():
         return resp
 
 
+class Info_Pedido(object):
+    pass
+
+
 @app.route("/info", methods={'GET'})
 def info():
     global dsgraph
@@ -70,8 +78,45 @@ def info():
         query = """
                prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
                        
-                       
-        """
+               SELECT ?id ?fecha_entrega ?compuesto_por ?es_transportado_por
+               WHERE {
+                    ?Pedido rdf:type ab:Pedido .
+                    ?Pedido ab:id ?id .    
+                    ?Pedido ab:fecha_entrega ?fecha_entrega .    
+                    ?Pedido ab:compuesto_por ?compuesto_por .    
+                    ?Pedido ab:es_transportado_por ?es_transportado_por .    
+                    ?Pedido ab:comprado_por '%s' . }   
+        """ % session['username']
+
+        res = AgentUtil.SPARQLHelper.read_query(query)
+
+        lista_productos = {}
+        for pedido in res["results"]["bindings"]:
+            info_producto = InfoProducto()
+            info_producto.id = pedido["compuesto_por"]["value"]
+            info_producto.transportista = pedido["es_transportado_por"]["value"]
+            info_producto.fecha = pedido["fecha_entrega"]["value"]
+            lista_productos[pedido["compuesto_por"]["value"]] = info_producto
+
+        lista_ids = [producto.id for producto in lista_productos]
+        query = """
+        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+              
+        SELECT ?id ?nombre
+        WHERE {
+            %s
+            ?Producto rdf:type ab:Producto .
+            ?Producto ab:id ?id .
+            ?Producto ab:nombre ?nombre . }
+        """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", lista_ids, False)
+
+        res = AgentUtil.SPARQLHelper.read_query(query)
+
+        for producto in res["results"]["bindings"]:
+            lista_productos[producto["id"]["value"]].nombre = producto["nombre"]["value"]
+
+        return render_template('info.html', productos=lista_productos)
+
 
 
 @app.route("/search", methods=['GET', 'POST'])
@@ -95,6 +140,7 @@ def browser_search():
                   ?Producto ab:modelo ?modelo.
                   ?Producto ab:calidad ?calidad.
                   ?Producto ab:precio ?precio.
+                  ?Producto ab:estado ?estado.
               """
         if request.form["n_ref"] != "":
             query += "FILTER regex(str(?n_ref), '^%s$')." % request.form["n_ref"]
@@ -108,6 +154,8 @@ def browser_search():
             query += "FILTER (?precio >= %s)." % request.form["minprecio"]
         if request.form["maxprecio"] != "":
             query += "FILTER (?precio <= %s)." % request.form["maxprecio"]
+
+        query += "FILTER regex(str(?estado), '^%s$')." % 'Disponible'
 
         query += "} GROUP BY ?n_ref"
 
