@@ -31,6 +31,43 @@ table {
             </tr>
         {% endfor %}
 </table>
+<p>Recommended products according to your searches</p>
+<table style="width:100%">
+    <tr>
+        <th></th><th>Ref. Number</th> <th>Name</th> <th>Model</th> <th>Quality</th> <th>Availability</th> <th>Price</th>
+    </tr>
+        {% for product in recomendaciones["results"]["bindings"] %}
+            <tr>
+                <td><input type="checkbox" name="items" value="{{product['n_ref_id']['value']}}"/></td>
+                <input type="hidden" name="user" value="{{username}}"/>
+                <td>{{product["n_ref"]["value"]}}</td>
+                <td>{{product["n_ref_nombre"]["value"]}}</td>
+                <td>{{product["n_ref_modelo"]["value"]}}</td>
+                <td>{{product["n_ref_calidad"]["value"]}}</td>
+                <td>{{product["disponibilidad"]["value"]}}</td>
+                <td>{{product["n_ref_precio"]["value"]}}</td>
+            </tr>
+        {% endfor %}
+</table>
+
+<p>Recommended products according to your valorations</p>
+<table style="width:100%">
+    <tr>
+        <th></th><th>Ref. Number</th> <th>Name</th> <th>Model</th> <th>Quality</th> <th>Availability</th> <th>Price</th>
+    </tr>
+        {% for product in segun_valoraciones["results"]["bindings"] %}
+            <tr>
+                <td><input type="checkbox" name="items" value="{{product['n_ref_id']['value']}}"/></td>
+                <input type="hidden" name="user" value="{{username}}"/>
+                <td>{{product["n_ref"]["value"]}}</td>
+                <td>{{product["n_ref_nombre"]["value"]}}</td>
+                <td>{{product["n_ref_modelo"]["value"]}}</td>
+                <td>{{product["n_ref_calidad"]["value"]}}</td>
+                <td>{{product["disponibilidad"]["value"]}}</td>
+                <td>{{product["n_ref_precio"]["value"]}}</td>
+            </tr>
+        {% endfor %}
+</table>
 <button type="submit">Buy</button>
 </form>
 </body>

@@ -26,6 +26,7 @@ import AgentUtil.SPARQLHelper
 # Para el sleep
 import time
 
+import random
 from models.InfoProducto import InfoProducto
 from models.Pedido import Pedido
 from models.Producto import Producto
@@ -163,16 +164,222 @@ def browser_search():
 
         query += "} GROUP BY ?n_ref"
 
-        res = AgentUtil.SPARQLHelper.read_query(query)
+        results = AgentUtil.SPARQLHelper.read_query(query)
 
         try:
-            res["results"]["bindings"][0]["n_ref"]
+            results["results"]["bindings"][0]["n_ref"]
         except KeyError:
-            del res["results"]["bindings"][0]
+            del results["results"]["bindings"][0]
 
-        return render_template("results.html", products=res, host_vendedor=(
-                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)),
-                               username=session['username'])
+        recomendaciones = []
+        query = """
+                       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+
+                      INSERT DATA{ 
+                          ab:Busqueda%(id)s ab:realizada_por '%(usuario)s' .
+                          ab:Busqueda%(id)s ab:n_ref '%(n_ref)s' .
+                          ab:Busqueda%(id)s ab:nombre '%(nombre)s' .
+                          ab:Busqueda%(id)s ab:modelo '%(calidad)s' .
+                          ab:Busqueda%(id)s ab:calidad '%(calidad)s' .
+                          ab:Busqueda%(id)s ab:precio_min '%(precio_min)s' .
+                          ab:Busqueda%(id)s ab:precio_max '%(precio_max)s' . }                          
+                      """ % {'id': random.randint(0, 99999), 'usuario':session['username'], 'n_ref':request.form['n_ref'], 'nombre': request.form['nombre'],
+          'calidad': request.form['calidad'], 'modelo': request.form['modelo'], 'precio_min' : request.form['minprecio'], 'precio_max':request.form['maxprecio'] }
+
+        AgentUtil.SPARQLHelper.update_query(query)
+
+        #Buscamos coincidencias con nombre
+        query = """
+                       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                       
+                       SELECT DISTINCT ?nombre
+                       WHERE {
+                            ?Busqueda ab:nombre ?nombre
+                        }
+                       
+                       """
+
+        nombres_buscados = AgentUtil.SPARQLHelper.read_query(query)
+        nombres_buscados = nombres_buscados['results']['bindings']
+        nombres = []
+        for n in nombres_buscados:
+            nombres.append(n['nombre']['value'])
+        query = """
+        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                       
+                       SELECT DISTINCT ?n_ref
+                       WHERE {
+                            %s
+                            ?Producto ab:nombre ?nombre .
+                            ?Procucto ab:n_ref ?n_ref .
+                        }
+        
+            """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?nombre", nombres, True)
+
+        res = AgentUtil.SPARQLHelper.read_query(query)
+        for product in res['results']['bindings']:
+            recomendaciones.append(product['n_ref']['value'])
+
+        # Buscamos coincidencias con modelo
+        query = """
+                               prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+
+                               SELECT DISTINCT ?modelo
+                               WHERE {
+                                    ?Busqueda ab:modelo ?modelo
+                                }
+
+                               """
+
+        modelos_buscados = AgentUtil.SPARQLHelper.read_query(query)
+        modelos_buscados = modelos_buscados['results']['bindings']
+        modelos = []
+        for m in modelos_buscados:
+            modelos.append(m['modelo']['value'])
+
+        query = """
+                prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                
+                               SELECT DISTINCT ?n_ref
+                               WHERE {
+                                    %s
+                                    ?Producto ab:modelo ?modelo .
+                                    ?Procucto ab:n_ref ?n_ref .
+                                }
+
+                    """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?modelo", modelos, True)
+
+        res = AgentUtil.SPARQLHelper.read_query(query)
+        for product in res[ 'results' ][ 'bindings' ]:
+            recomendaciones.append(product[ 'n_ref' ][ 'value' ])
+
+        #Buscamos coincidencias con n_ref
+        query = """
+                       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+    
+                       SELECT DISTINCT ?n_ref
+                       WHERE {
+                            ?Busqueda ab:n_ref ?n_ref
+                        }
+    
+                       """
+        res = AgentUtil.SPARQLHelper.read_query(query)
+
+        for product in res[ 'results' ][ 'bindings' ]:
+            recomendaciones.append(product[ 'n_ref' ][ 'value' ])
+
+        query = """
+                prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                
+                 SELECT ?n_ref (SAMPLE(?id) AS ?n_ref_id) (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS 
+              ?n_ref_modelo) (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio)
+              (COUNT(*) AS ?disponibilidad)
+              
+              WHERE 
+              { 
+                  %s
+                  ?Producto ab:id ?id.
+                  ?Producto ab:n_ref ?n_ref.
+                  ?Producto ab:nombre ?nombre.
+                  ?Producto ab:modelo ?modelo.
+                  ?Producto ab:calidad ?calidad.
+                  ?Producto ab:precio ?precio. 
+                  }GROUP BY ?n_ref
+               
+              """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", recomendaciones, True)
+
+        recomendacion = AgentUtil.SPARQLHelper.read_query(query)
+
+        #Recomendaciones segun valoraciones
+
+        query = """
+                       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                       
+                       SELECT ?sobre_un 
+                       WHERE {
+                            ?Valoracion ab:sobre_un ?sobre_un .
+                            ?Valoracion ab:autor '%s'
+                             }
+                        """ % session['username']
+
+        productos_valorados = AgentUtil.SPARQLHelper.read_query(query)
+        valorados = []
+        for p in productos_valorados['results']['bindings']:
+            valorados.append(p['sobre_un']['value'])
+
+        query = """
+                      prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                      
+                      SELECT DISTINCT ?marca
+                      WHERE {
+                        %s
+                        ?Producto ab:marca ?marca .
+                        ?Producto ab:n_ref ?n_ref }
+        """ %  AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", valorados, True)
+
+        marcas_valoradas = AgentUtil.SPARQLHelper.read_query(query)
+
+        marcas_positivas = []
+        for marca in marcas_valoradas['results']['bindings']:
+            query = """
+                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                            SELECT ?n_ref
+                            WHERE {
+                                ?Producto ab:n_ref ?n_ref .
+                                ?Producto ab:marca '%s' }
+                            """ % marca['marca']['value']
+
+            productos_marca = AgentUtil.SPARQLHelper.read_query(query)
+
+            query = """
+                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                            
+                            SELECT (AVG(?puntuacion) AS rate)
+                            WHERE {
+                                %(filter)s
+                                ?Valoracion ab:sobre ?sobre .
+                                ?Valoracion ab:autor '%(autor)s' .
+                                ?Valoracion ab:puntuacion ?puntuacion }
+                            """ % {'filter': AgentUtil.SPARQLHelper.filterSPARQLValues("?sobre", productos_marca, False), 'autor':session['username']}
+            puntuacion = AgentUtil.SPARQLHelper.read_query(query)
+            puntuacion = puntuacion['results']['bindings'][0]['rate']['value']
+
+            if (puntuacion > 3):
+                marcas_positivas.append(marca['marca']['value'])
+
+        query = """
+                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                            
+                            SELECT ?n_ref (SAMPLE(?id) AS ?n_ref_id) (SAMPLE(?nombre) AS ?n_ref_nombre) (SAMPLE(?modelo) AS 
+                                    ?n_ref_modelo) (SAMPLE(?calidad) AS ?n_ref_calidad) (SAMPLE(?precio) AS ?n_ref_precio)
+                                    (COUNT(*) AS ?disponibilidad)
+                            WHERE {
+                                %s
+                                 ?Producto ab:id ?id.
+                                  ?Producto ab:n_ref ?n_ref.
+                                  ?Producto ab:nombre ?nombre.
+                                  ?Producto ab:modelo ?modelo.
+                                  ?Producto ab:calidad ?calidad.
+                                  ?Producto ab:precio ?precio.
+                                  ?Producto ab:marca ?marca .
+                                   }GROUP BY ?n_ref
+                            """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?marca", marcas_positivas, True)
+
+        rec = AgentUtil.SPARQLHelper.read_query(query)
+
+        try:
+            recomendacion[ "results" ][ "bindings" ][ 0 ][ "n_ref" ]
+        except KeyError:
+            del recomendacion[ "results" ][ "bindings" ][ 0 ]
+
+        try:
+            rec[ "results" ][ "bindings" ][ 0 ][ "n_ref" ]
+        except KeyError:
+            del rec[ "results" ][ "bindings" ][ 0 ]
+
+        return render_template("results.html", products=results, username=session['username'], recomendaciones=recomendacion, segun_valoraciones = rec, host_vendedor=(
+                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
+
 
 
 @app.route("/rate", methods=['GET', 'POST'])
@@ -199,6 +406,8 @@ def browser_rate():
         AgentUtil.SPARQLHelper.update_query(query)
 
         no_valorados = get_productos_a_valorar()
+
+
 
         return render_template("ratings.html", products=no_valorados, host_evaluador=(
                 AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username= session['username'])
