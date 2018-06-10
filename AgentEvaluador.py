@@ -265,7 +265,7 @@ def browser_search():
                        """
         res = AgentUtil.SPARQLHelper.read_query(query)
 
-        for product in res[ 'results' ][ 'bindings' ]:
+        for product in res['results' ][ 'bindings' ]:
             recomendaciones.append(product[ 'n_ref' ][ 'value' ])
 
         query = """
