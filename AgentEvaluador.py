@@ -250,7 +250,7 @@ def get_productos_a_valorar():
     res = AgentUtil.SPARQLHelper.read_query(query)
 
     nrefs = res[ 'results' ][ 'bindings' ]
-    sin_valoracion = [ ]
+    sin_valoracion = []
     for ref in nrefs:
         query = """
                                     prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
