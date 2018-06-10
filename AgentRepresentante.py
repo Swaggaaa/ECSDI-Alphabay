@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+
+import logging
 from multiprocessing import Process, Queue
 import socket
 
@@ -32,6 +34,8 @@ mss_cnt = 0
 dsgraph = Graph()
 
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 logger = config_logger(level=1)
 
 cola1 = Queue()
@@ -91,7 +95,7 @@ def browser_search():
                                             """ % {'productoid': id_product,
                                                    'id': id_product, 'modelo': '"' + request.form["modelo"] + '"',
                                                    'nombre': '"' + request.form["nombre"] + '"',
-                                                   'precio': int(request.form["precio"]),
+                                                   'precio': float(request.form["precio"]),
                                                    'descripcion': '"' + request.form["descripcion"] + '"',
                                                    'marca': '"' + request.form["marca"] + '"',
                                                    'n_ref': int(request.form["n_ref"]),
@@ -100,6 +104,8 @@ def browser_search():
                                                    'calidad': '"' + request.form["calidad"] + '"'}
 
                 res = AgentUtil.SPARQLHelper.update_query(query)
+
+                logger.info("[#] Hemos añadido un nuevo producto al catalogo con id: %s" % id_product)
 
         return render_template("add_product_ok.html", host_evaluador=(
                     AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)))

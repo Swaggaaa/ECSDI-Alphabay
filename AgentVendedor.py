@@ -84,8 +84,14 @@ def comunicacion():
                                    msgcnt=mss_cnt)
         else:
             gr = build_message(Graph(), ACL['not-understood'], sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
-                               msgcnt=mss_cnt)
 
+                               msgcnt=mss_cnt)
+    if gr is None:
+        gr = build_message(Graph(),
+                           ACL['inform-done'],
+                           sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
+                           msgcnt=mss_cnt,
+                           receiver=msgdic['sender'])
     mss_cnt += 1
     return gr.serialize(format='xml')
 
@@ -176,7 +182,7 @@ def browser_purchase():
         pedido = Pedido()
         pedido.id = random.randint(1, 99999999)  # TODO: Get latest id
         pedido.prioridad = request.form['prioridad']
-        pedido.fecha_compra = time.strftime("%d/%m/%Y")
+        pedido.fecha_compra = datetime.now().strftime("%d/%m/%Y")
         pedido.direccion = request.form['direccion']
         pedido.ciudad = request.form['ciudad']
 
@@ -224,7 +230,7 @@ def browser_purchase():
             %s
             ?Producto ab:estado ?estado .
             ?Producto rdf:type ab:Producto .
-            ?Producto ab:id ?id .
+            ?Producto ab:id ?id . }
         """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", pedido.compuesto_por, False)
 
         AgentUtil.SPARQLHelper.update_query(query)  # Los marcamos como vendidos para futuras busquedas
@@ -268,7 +274,6 @@ def browser_refund():
                           {
                               ?Pedido ab:comprado_por ?comprado_por.
                               ?Pedido ab:compuesto_por ?compuesto_por.
-                             
                           """
         query += "FILTER regex (str(?comprado_por), '%s').}" % session['username']
 
@@ -325,7 +330,7 @@ def browser_refund():
             res = AgentUtil.SPARQLHelper.read_query(query)
 
             fecha_entrega = res["results"]["bindings"][0]["fecha_entrega"]["value"]
-            fecha_entrega = datetime.strptime(fecha_entrega, "%Y-%m-%d %H:%M:%S.%f")
+            fecha_entrega = datetime.strptime(fecha_entrega, "%Y-%m-%d %H:%M:%S")
             dias_pasados = fecha_actual - fecha_entrega
 
             if dias_pasados.days <= 15:

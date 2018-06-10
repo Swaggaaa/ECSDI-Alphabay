@@ -83,7 +83,7 @@ def comunicacion():
                     lote.prioridad = gm.value(subject=content, predicate=AB.prioridad)
                     lote.id = gm.value(subject=content, predicate=AB.id)
 
-                    precio = float(lote.peso_total) + random.randint(-2, 2)
+                    precio = float(lote.peso_total) + random.uniform(-1, 1)
                     if str(lote.prioridad) == 'express':
                         precio += 6.0
                     elif str(lote.prioridad) == 'standard':

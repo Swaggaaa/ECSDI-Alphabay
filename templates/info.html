@@ -15,14 +15,14 @@ table {
 <body>
 <table style="width:100%">
     <tr>
-        <th></th><th>ID</th> <th>Name</th> <th>Delivery Date</th> <th>Carrier</th>
+        <th>ID</th> <th>Name</th> <th>Delivery Date</th> <th>Carrier</th>
     </tr>
-        {% for id in products%}
+        {% for id in productos%}
             <tr>
-                <td>{{product[id].id}}</td>
-                <td>{{product[id].nombre}}</td>
-                <td>{{product[id].fecha}}</td>
-                <td>{{product[id].transportista}}</td>
+                <td>{{productos[id].id}}</td>
+                <td>{{productos[id].nombre}}</td>
+                <td>{{productos[id].fecha}}</td>
+                <td>{{productos[id].transportista}}</td>
             </tr>
         {% endfor %}
 </table>

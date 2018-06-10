@@ -98,7 +98,7 @@ def info():
             info_producto.fecha = pedido["fecha_entrega"]["value"]
             lista_productos[pedido["compuesto_por"]["value"]] = info_producto
 
-        lista_ids = [producto.id for producto in lista_productos]
+        lista_ids = [producto for producto in lista_productos]
         query = """
         prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
               
@@ -116,7 +116,6 @@ def info():
             lista_productos[producto["id"]["value"]].nombre = producto["nombre"]["value"]
 
         return render_template('info.html', productos=lista_productos)
-
 
 
 @app.route("/search", methods=['GET', 'POST'])
