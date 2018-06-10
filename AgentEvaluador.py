@@ -224,9 +224,9 @@ def get_productos_a_valorar():
     query += '}'
 
     res = AgentUtil.SPARQLHelper.read_query(query)
-    pedidos = res[ 'results' ][ 'bindings' ]
-    no_valorados = [ ]
-    ids = [ ]
+    pedidos = res['results']['bindings']
+    no_valorados = []
+    ids = []
     for pedido in pedidos:
     # fecha_entrega = pedido['fecha_entrega']['value']
     # fecha_entrega = datetime.strptime(fecha_entrega, "%Y-%m-%d %H:%M:%S.%f")
