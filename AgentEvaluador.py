@@ -8,6 +8,8 @@ Ejemplo de agente para implementar los vuestros.
 from __future__ import print_function
 
 import logging
+
+from datetime import datetime, timedelta
 from multiprocessing import Process, Queue
 import socket
 
@@ -16,7 +18,7 @@ from flask import Flask, request, render_template, make_response, session
 import SPARQLWrapper
 
 from AgentUtil.FlaskServer import shutdown_server
-from AgentUtil.Agent import Agent
+from AgentUtil.SPARQLHelper import filterSPARQLValues
 from AgentUtil.Logging import config_logger
 import AgentUtil.Agents
 import AgentUtil.SPARQLHelper
@@ -61,7 +63,10 @@ def login():
                                                  AgentUtil.Agents.VENDEDOR_PORT),
                                              username=request.form['nombre'],
                                              host_representante=AgentUtil.Agents.hostname + ':' + str(
-                                                 AgentUtil.Agents.REPRESENTANTE_PORT)
+                                                 AgentUtil.Agents.REPRESENTANTE_PORT),
+                                             host_evaluador=AgentUtil.Agents.hostname + ':' + str(
+                                                 AgentUtil.Agents.EVALUADOR_PORT)
+
                                              ))
         session['username'] = request.form['nombre']
         return resp
@@ -168,6 +173,105 @@ def browser_search():
         return render_template("results.html", products=res, host_vendedor=(
                 AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)),
                                username=session['username'])
+
+
+@app.route("/rate", methods=['GET', 'POST'])
+def browser_rate():
+    global dsgraph
+    if request.method == 'GET':
+        session['username'] = request.args.get('user')
+
+        no_valorados = get_productos_a_valorar()
+
+        return render_template("ratings.html", products=no_valorados, host_evaluador=(
+                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username=session['username'])
+
+    else:
+
+        query = """prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+                    INSERT DATA{
+                        ab:Valoracion%(autor)s%(sobre)s ab:autor '%(autor)s' .
+                        ab:Valoracion%(autor)s%(sobre)s ab:puntuacion '%(puntuacion)s' .
+                        ab:Valoracion%(autor)s%(sobre)s ab:comentario '%(comentario)s' .
+                        ab:Valoracion%(autor)s%(sobre)s ab:sobre_un '%(sobre)s' . }
+                """ % {'autor': session['username'], 'puntuacion':request.form['punctuation'], 'comentario': request.form['opinion'], 'sobre' :request.form['product']}
+
+        AgentUtil.SPARQLHelper.update_query(query)
+
+        no_valorados = get_productos_a_valorar()
+
+        return render_template("ratings.html", products=no_valorados, host_evaluador=(
+                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username= session['username'])
+
+
+
+def get_productos_a_valorar():
+    fecha_actual = datetime.now()
+
+
+    query = """
+                                     prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+    
+                                    SELECT ?id ?compuesto_por ?fecha_entrega
+                                    WHERE {
+                                        ?Pedido ab:id ?id .
+                                        ?Pedido ab:compuesto_por ?compuesto_por.
+                                        ?Pedido ab:fecha_entrega ?fecha_entrega .
+                                        ?Pedido ab:comprado_por ?comprado_por .
+                                """
+    query += "FILTER regex (str(?comprado_por), '%s')." % session[ 'username' ]
+    # query += "FILTER (?fecha_entrega < '%s')"%fecha_actual
+    query += '}'
+
+    res = AgentUtil.SPARQLHelper.read_query(query)
+    pedidos = res[ 'results' ][ 'bindings' ]
+    no_valorados = [ ]
+    ids = [ ]
+    for pedido in pedidos:
+    # fecha_entrega = pedido['fecha_entrega']['value']
+    # fecha_entrega = datetime.strptime(fecha_entrega, "%Y-%m-%d %H:%M:%S.%f")
+    # diff = (fecha_actual - fecha_entrega).total_seconds()
+        diff = 150
+        if diff > 120:
+            ids.append(pedido[ "compuesto_por" ][ "value" ])
+
+    query = """
+                                           prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+    
+                                           SELECT DISTINCT ?nombre ?n_ref
+                                           WHERE {
+                                               %s
+                                               ?Producto ab:id ?id .
+                                               ?Producto ab:nombre ?nombre .
+                                               ?Producto ab:n_ref ?n_ref .
+                                                }
+                                       """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?id", ids, False)
+
+    res = AgentUtil.SPARQLHelper.read_query(query)
+
+    nrefs = res[ 'results' ][ 'bindings' ]
+    sin_valoracion = [ ]
+    for ref in nrefs:
+        query = """
+                                    prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+    
+                                    SELECT *
+                                    WHERE {?Valoracion ab:sobre_un '%(n_ref)s' .
+                                          ?Valoracion ab:autor '%(username)s' .
+                                          }""" % {'n_ref': ref[ 'n_ref' ][ 'value' ], 'username': session[ 'username' ]}
+        res = AgentUtil.SPARQLHelper.read_query(query)
+        if len(res[ 'results' ][ 'bindings' ]) == 0:
+            sin_valoracion.append(ref)
+
+    for p in sin_valoracion:
+        producto = Producto()
+        producto.id = pedido[ 'compuesto_por' ][ 'value' ]
+        producto.n_ref = p[ 'n_ref' ][ 'value' ]
+        producto.nombre = p[ 'nombre' ][ 'value' ]
+
+        no_valorados.append(producto)
+
+    return no_valorados
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1

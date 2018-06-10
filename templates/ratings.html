@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rate the products bought</title>
+</head>
+<body>
+
+{% for product in products %}
+<form method="post" name="{{product.id}}" id="{{product.id}}" action="" >
+    	<table>
+				<tr>
+					<td>
+						<b>{{product.nombre}}</b>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<b>Punctuation</b>
+					</td>
+					<td>
+						<input type='passsword' name='punctuation' style='padding: 4px'/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<b>Opinion:</b>
+					</td>
+					<td>
+						<input type='text' name='opinion' style='padding: 4px'/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+                        <p><button type="submit" name="product" value="{{product.n_ref}}" >Send</button></p>
+					</td>
+				</tr>
+			</table>
+</form>
+{% endfor %}
+
+
+
+</body>
+</html>

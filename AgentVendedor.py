@@ -207,6 +207,7 @@ def browser_purchase():
              ab:Pedido%(id)s ab:ciudad '%(ciudad)s' .
              ab:Pedido%(id)s ab:peso_total %(peso)s .
              ab:Pedido%(id)s ab:comprado_por '%(usuario)s' .
+             ab:Pedido%(id)s ab:valorado 0
         """ % {'id': pedido.id, 'prioridad': pedido.prioridad, 'fecha': pedido.fecha_compra, 'dir': pedido.direccion,
                'ciudad': pedido.ciudad, 'peso': pedido.peso_total, 'usuario': session['username']}
 
