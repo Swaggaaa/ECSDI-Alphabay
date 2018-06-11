@@ -288,7 +288,7 @@ def browser_refund():
         query = """
                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
         
-                          SELECT ?id ?n_ref ?nombre ?modelo ?precio 
+                          SELECT DISTINCT ?id ?n_ref ?nombre ?modelo ?precio 
                           WHERE 
                           {
                                 %s
