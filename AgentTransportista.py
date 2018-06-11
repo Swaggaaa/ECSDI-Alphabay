@@ -214,7 +214,7 @@ if __name__ == '__main__':
     ab1.start()
 
     # Ponemos en marcha el servidor
-    app.run(host=AgentUtil.Agents.TRANSPORTISTA_HOSTNAME, port=AgentUtil.Agents.TRANSPORTISTA_PORT)
+    app.run(host=AgentUtil.Agents.TRANSPORTISTA_HOSTNAME, port=AgentUtil.Agents.TRANSPORTISTA_PORT, threaded=True)
 
     # Esperamos a que acaben los behaviors
     ab1.join()

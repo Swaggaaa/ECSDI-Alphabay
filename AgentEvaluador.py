@@ -147,17 +147,25 @@ def browser_search():
                   ?Producto ab:precio ?precio.
                   ?Producto ab:estado ?estado.
               """
+
+        all_empty = True
         if request.form["n_ref"] != "":
+            all_empty = False
             query += "FILTER regex(str(?n_ref), '^%s$')." % request.form["n_ref"]
         if request.form["nombre"] != "":
+            all_empty = False
             query += "FILTER regex(str(?nombre), '%s')." % request.form["nombre"]
         if request.form["modelo"] != "":
+            all_empty = False
             query += "FILTER regex(str(?modelo), '%s')." % request.form["modelo"]
         if request.form["calidad"] != "Any":
+            all_empty = False
             query += "FILTER regex(str(?calidad), '^%s$')." % request.form["calidad"]
         if request.form["minprecio"] != "":
+            all_empty = False
             query += "FILTER (?precio >= %s)." % request.form["minprecio"]
         if request.form["maxprecio"] != "":
+            all_empty = False
             query += "FILTER (?precio <= %s)." % request.form["maxprecio"]
 
         query += "FILTER regex(str(?estado), '^%s$')." % 'Disponible'
@@ -172,23 +180,26 @@ def browser_search():
             del results["results"]["bindings"][0]
 
         recomendaciones = []
-        query = """
-                       prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+        if not all_empty:
+            query = """
+                           prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
+    
+                          INSERT DATA{ 
+                              ab:Busqueda%(id)s ab:realizada_por '%(usuario)s' .
+                              ab:Busqueda%(id)s ab:n_ref '%(n_ref)s' .
+                              ab:Busqueda%(id)s ab:nombre '%(nombre)s' .
+                              ab:Busqueda%(id)s ab:modelo '%(calidad)s' .
+                              ab:Busqueda%(id)s ab:calidad '%(calidad)s' .
+                              ab:Busqueda%(id)s ab:precio_min '%(precio_min)s' .
+                              ab:Busqueda%(id)s ab:precio_max '%(precio_max)s' . }                          
+                          """ % {'id': random.randint(0, 99999), 'usuario': session['username'],
+                                 'n_ref': request.form['n_ref'], 'nombre': request.form['nombre'],
+                                 'calidad': request.form['calidad'], 'modelo': request.form['modelo'],
+                                 'precio_min': request.form['minprecio'], 'precio_max': request.form['maxprecio']}
 
-                      INSERT DATA{ 
-                          ab:Busqueda%(id)s ab:realizada_por '%(usuario)s' .
-                          ab:Busqueda%(id)s ab:n_ref '%(n_ref)s' .
-                          ab:Busqueda%(id)s ab:nombre '%(nombre)s' .
-                          ab:Busqueda%(id)s ab:modelo '%(calidad)s' .
-                          ab:Busqueda%(id)s ab:calidad '%(calidad)s' .
-                          ab:Busqueda%(id)s ab:precio_min '%(precio_min)s' .
-                          ab:Busqueda%(id)s ab:precio_max '%(precio_max)s' . }                          
-                      """ % {'id': random.randint(0, 99999), 'usuario':session['username'], 'n_ref':request.form['n_ref'], 'nombre': request.form['nombre'],
-          'calidad': request.form['calidad'], 'modelo': request.form['modelo'], 'precio_min' : request.form['minprecio'], 'precio_max':request.form['maxprecio'] }
+            AgentUtil.SPARQLHelper.update_query(query)
 
-        AgentUtil.SPARQLHelper.update_query(query)
-
-        #Buscamos coincidencias con nombre
+        # Buscamos coincidencias con nombre
         query = """
                        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
                        
@@ -199,11 +210,11 @@ def browser_search():
                        
                        """
 
-        nombres_buscados = AgentUtil.SPARQLHelper.read_query(query)
-        nombres_buscados = nombres_buscados['results']['bindings']
+        nombres_buscados = AgentUtil.SPARQLHelper.read_query(query)['results']['bindings']
         nombres = []
         for n in nombres_buscados:
             nombres.append(n['nombre']['value'])
+
         query = """
         prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
                        
@@ -218,7 +229,7 @@ def browser_search():
 
         res = AgentUtil.SPARQLHelper.read_query(query)
         for product in res['results']['bindings']:
-            if product[ 'n_ref' ][ 'value' ] != '':
+            if product['n_ref']['value'] != '':
                 recomendaciones.append(product['n_ref']['value'])
 
         # Buscamos coincidencias con modelo
@@ -251,11 +262,11 @@ def browser_search():
                     """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?modelo", modelos, True)
 
         res = AgentUtil.SPARQLHelper.read_query(query)
-        for product in res[ 'results' ][ 'bindings' ]:
-            if product[ 'n_ref' ][ 'value' ] != '':
-                recomendaciones.append(product[ 'n_ref' ][ 'value' ])
+        for product in res['results']['bindings']:
+            if product['n_ref']['value'] != '':
+                recomendaciones.append(product['n_ref']['value'])
 
-        #Buscamos coincidencias con n_ref
+        # Buscamos coincidencias con n_ref
         query = """
                        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
     
@@ -267,10 +278,9 @@ def browser_search():
                        """
         res = AgentUtil.SPARQLHelper.read_query(query)
 
-        for product in res['results' ][ 'bindings' ]:
+        for product in res['results']['bindings']:
             if product['n_ref']['value'] != '':
-                recomendaciones.append(product[ 'n_ref' ][ 'value' ])
-
+                recomendaciones.append(product['n_ref']['value'])
 
         query = """
                 prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -294,7 +304,7 @@ def browser_search():
 
         recomendacion = AgentUtil.SPARQLHelper.read_query(query)
 
-        #Recomendaciones segun valoraciones
+        # Recomendaciones segun valoraciones
 
         query = """
                        prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -319,7 +329,7 @@ def browser_search():
                         %s
                         ?Producto ab:marca ?marca .
                         ?Producto ab:n_ref ?n_ref }
-        """ %  AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", valorados, False)
+        """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", valorados, False)
 
         marcas_valoradas = AgentUtil.SPARQLHelper.read_query(query)
 
@@ -347,7 +357,8 @@ def browser_search():
                                 ?Valoracion ab:sobre_un ?sobre_un .
                                 ?Valoracion ab:autor '%(autor)s' .
                                 ?Valoracion ab:puntuacion ?puntuacion }
-                            """ % {'filter': AgentUtil.SPARQLHelper.filterSPARQLValues("?sobre_un", productos, True), 'autor':session['username']}
+                            """ % {'filter': AgentUtil.SPARQLHelper.filterSPARQLValues("?sobre_un", productos, True),
+                                   'autor': session['username']}
             puntuacion = AgentUtil.SPARQLHelper.read_query(query)
             puntuacion = puntuacion['results']['bindings']
 
@@ -359,7 +370,7 @@ def browser_search():
                 score += int(p['puntuacion']['value'])
 
             if (count != 0):
-                puntuacion = score/count
+                puntuacion = score / count
                 if (puntuacion > 3):
                     marcas_positivas.append(marca['marca']['value'])
 
@@ -384,18 +395,18 @@ def browser_search():
         rec = AgentUtil.SPARQLHelper.read_query(query)
 
         try:
-            recomendacion[ "results" ][ "bindings" ][ 0 ][ "n_ref" ]
+            recomendacion["results"]["bindings"][0]["n_ref"]
         except KeyError:
-            del recomendacion[ "results" ][ "bindings" ][ 0 ]
+            del recomendacion["results"]["bindings"][0]
 
         try:
-            rec[ "results" ][ "bindings" ][ 0 ][ "n_ref" ]
+            rec["results"]["bindings"][0]["n_ref"]
         except KeyError:
-            del rec[ "results" ][ "bindings" ][ 0 ]
+            del rec["results"]["bindings"][0]
 
-        return render_template("results.html", products=results, username=session['username'], recomendaciones=recomendacion, segun_valoraciones = rec, host_vendedor=(
-                AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
-
+        return render_template("results.html", products=results, username=session['username'],
+                               recomendaciones=recomendacion, segun_valoraciones=rec, host_vendedor=(
+                    AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
 
 
 @app.route("/rate", methods=['GET', 'POST'])
@@ -407,7 +418,8 @@ def browser_rate():
         no_valorados = get_productos_a_valorar()
 
         return render_template("ratings.html", products=no_valorados, host_evaluador=(
-                AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username=session['username'])
+                AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)),
+                               username=session['username'])
 
     else:
 
@@ -417,22 +429,20 @@ def browser_rate():
                         ab:Valoracion%(autor)s%(sobre)s ab:puntuacion '%(puntuacion)s' .
                         ab:Valoracion%(autor)s%(sobre)s ab:comentario '%(comentario)s' .
                         ab:Valoracion%(autor)s%(sobre)s ab:sobre_un '%(sobre)s' . }
-                """ % {'autor': session['username'], 'puntuacion':request.form['punctuation'], 'comentario': request.form['opinion'], 'sobre' :request.form['product']}
+                """ % {'autor': session['username'], 'puntuacion': request.form['punctuation'],
+                       'comentario': request.form['opinion'], 'sobre': request.form['product']}
 
         AgentUtil.SPARQLHelper.update_query(query)
 
         no_valorados = get_productos_a_valorar()
 
-
-
         return render_template("ratings.html", products=no_valorados, host_evaluador=(
-                AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username= session['username'])
-
+                AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)),
+                               username=session['username'])
 
 
 def get_productos_a_valorar():
     fecha_actual = datetime.now()
-
 
     query = """
                                      prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -444,7 +454,7 @@ def get_productos_a_valorar():
                                         ?Pedido ab:fecha_entrega ?fecha_entrega .
                                         ?Pedido ab:comprado_por ?comprado_por .
                                 """
-    query += "FILTER regex (str(?comprado_por), '%s')." % session[ 'username' ]
+    query += "FILTER regex (str(?comprado_por), '%s')." % session['username']
     # query += "FILTER (?fecha_entrega < '%s')"%fecha_actual
     query += '}'
 
@@ -453,12 +463,12 @@ def get_productos_a_valorar():
     no_valorados = []
     ids = []
     for pedido in pedidos:
-    # fecha_entrega = pedido['fecha_entrega']['value']
-    # fecha_entrega = datetime.strptime(fecha_entrega, "%Y-%m-%d %H:%M:%S.%f")
-    # diff = (fecha_actual - fecha_entrega).total_seconds()
+        # fecha_entrega = pedido['fecha_entrega']['value']
+        # fecha_entrega = datetime.strptime(fecha_entrega, "%Y-%m-%d %H:%M:%S.%f")
+        # diff = (fecha_actual - fecha_entrega).total_seconds()
         diff = 150
         if diff > 120:
-            ids.append(pedido[ "compuesto_por" ][ "value" ])
+            ids.append(pedido["compuesto_por"]["value"])
 
     query = """
                                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -474,7 +484,7 @@ def get_productos_a_valorar():
 
     res = AgentUtil.SPARQLHelper.read_query(query)
 
-    nrefs = res[ 'results' ][ 'bindings' ]
+    nrefs = res['results']['bindings']
     sin_valoracion = []
     for ref in nrefs:
         query = """
@@ -483,16 +493,16 @@ def get_productos_a_valorar():
                                     SELECT *
                                     WHERE {?Valoracion ab:sobre_un '%(n_ref)s' .
                                           ?Valoracion ab:autor '%(username)s' .
-                                          }""" % {'n_ref': ref[ 'n_ref' ][ 'value' ], 'username': session[ 'username' ]}
+                                          }""" % {'n_ref': ref['n_ref']['value'], 'username': session['username']}
         res = AgentUtil.SPARQLHelper.read_query(query)
-        if len(res[ 'results' ][ 'bindings' ]) == 0:
+        if len(res['results']['bindings']) == 0:
             sin_valoracion.append(ref)
 
     for p in sin_valoracion:
         producto = Producto()
-        producto.id = pedido[ 'compuesto_por' ][ 'value' ]
-        producto.n_ref = p[ 'n_ref' ][ 'value' ]
-        producto.nombre = p[ 'nombre' ][ 'value' ]
+        producto.id = pedido['compuesto_por']['value']
+        producto.n_ref = p['n_ref']['value']
+        producto.nombre = p['nombre']['value']
 
         no_valorados.append(producto)
 
@@ -538,7 +548,7 @@ if __name__ == '__main__':
     ab1.start()
 
     # Ponemos en marcha el servidor
-    app.run(host=AgentUtil.Agents.EVALUADOR_HOSTNAME, port=AgentUtil.Agents.EVALUADOR_PORT)
+    app.run(host=AgentUtil.Agents.EVALUADOR_HOSTNAME, port=AgentUtil.Agents.EVALUADOR_PORT, threaded=True)
 
     # Esperamos a que acaben los behaviors
     ab1.join()

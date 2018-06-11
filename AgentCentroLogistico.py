@@ -606,7 +606,7 @@ if __name__ == '__main__':
     ab3.start()
 
     # Ponemos en marcha el servidor
-    app.run(host=AgentUtil.Agents.CENTROLOG_HOSTNAME, port=AgentUtil.Agents.CENTROLOG_PORT)
+    app.run(host=AgentUtil.Agents.CENTROLOG_HOSTNAME, port=AgentUtil.Agents.CENTROLOG_PORT, threaded=True)
 
     # Esperamos a que acaben los behaviors
     # ab1.join()
