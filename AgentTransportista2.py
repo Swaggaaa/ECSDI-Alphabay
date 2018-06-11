@@ -9,28 +9,22 @@ from __future__ import print_function
 
 import logging
 import random
-from multiprocessing import Process, Queue
-import socket
+from multiprocessing import Queue
 
-from rdflib import Namespace, Graph, RDF, URIRef, Literal
-from flask import Flask, request, render_template
-import SPARQLWrapper
-from rdflib.namespace import FOAF
+from flask import Flask, request
+from rdflib import Graph, Literal
 
 import AgentUtil
+import AgentUtil.Agents
+import AgentUtil.SPARQLHelper
 from AgentUtil.ACLMessages import build_message, send_message, get_message_properties
 from AgentUtil.FlaskServer import shutdown_server
-from AgentUtil.Agent import Agent
 from AgentUtil.Logging import config_logger
-import AgentUtil.Agents
-
-# Para el sleep
-import time
-
 from AgentUtil.OntoNamespaces import ACL, AB
-import AgentUtil.SPARQLHelper
 from models.Lote import Lote
 from models.Oferta import Oferta
+
+# Para el sleep
 
 __author__ = 'Swaggaaa'
 
@@ -184,7 +178,6 @@ def comunicacion():
     return gr.serialize(format='xml')
 
 
-
 # Para parar el agente. Por ahora no lo necesitaremos ya que se supone que están activos 24/7 skrra
 @app.route("/Stop")
 def stop():
@@ -198,25 +191,8 @@ def tidyup():
     pass
 
 
-# Esta función se ejecuta en bucle (a no ser que lo cambiéis) y es el comportamiento inicial del agente. Aquí podéis
-# mandar mensajes a los demás o hacer el trabajo que no requiera la petición de un agente
-def agentbehavior1(cola):
-    graph = cola.get()
-    while True:
-        time.sleep(1)
-        pass
-
-    pass
-
-
 if __name__ == '__main__':
-    # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
-
     # Ponemos en marcha el servidor
     app.run(host=AgentUtil.Agents.TRANSPORTISTA2_HOSTNAME, port=AgentUtil.Agents.TRANSPORTISTA2_PORT, threaded=True)
 
-    # Esperamos a que acaben los behaviors
-    ab1.join()
     print('The End')

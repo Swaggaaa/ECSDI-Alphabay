@@ -3,27 +3,18 @@
 from __future__ import print_function
 
 import logging
-from multiprocessing import Process, Queue
-import socket
+from multiprocessing import Queue
 
-from rdflib import Namespace, Graph, RDF, URIRef, Literal
 from flask import Flask, request, render_template
-import SPARQLWrapper
-from rdflib.namespace import FOAF
+from rdflib import Graph
 
 import AgentUtil
-import AgentUtil.SPARQLHelper
-from AgentUtil.ACLMessages import build_message, send_message
-from AgentUtil.FlaskServer import shutdown_server
-from AgentUtil.Agent import Agent
-from AgentUtil.Logging import config_logger
 import AgentUtil.Agents
+import AgentUtil.SPARQLHelper
+from AgentUtil.FlaskServer import shutdown_server
+from AgentUtil.Logging import config_logger
 
 # Para el sleep
-import time
-
-from AgentUtil.OntoNamespaces import ACL, AB
-from AgentUtil.SPARQLHelper import filterSPARQLValues
 
 __author__ = 'Swaggaaa'
 
@@ -32,7 +23,6 @@ mss_cnt = 0
 
 # Global triplestore graph
 dsgraph = Graph()
-
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -108,7 +98,7 @@ def browser_search():
                 logger.info("[#] Hemos añadido un nuevo producto al catalogo con id: %s" % id_product)
 
         return render_template("add_product_ok.html", host_evaluador=(
-                    AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)))
+                AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)))
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
@@ -133,26 +123,8 @@ def tidyup():
     pass
 
 
-# Esta función se ejecuta en bucle (a no ser que lo cambiéis) y es el comportamiento inicial del agente. Aquí podéis
-# mandar mensajes a los demás o hacer el trabajo que no requiera la petición de un agente
-def agentbehavior1(cola):
-    graph = cola.get()
-    while True:
-        time.sleep(1)
-        pass
-
-    pass
-
-
 if __name__ == '__main__':
-
-    # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
-
     # Ponemos en marcha el servidor
     app.run(host=AgentUtil.Agents.REPRESENTANTE_HOSTNAME, port=AgentUtil.Agents.REPRESENTANTE_PORT, threaded=True)
 
-    # Esperamos a que acaben los behaviors
-    ab1.join()
     print('The End')

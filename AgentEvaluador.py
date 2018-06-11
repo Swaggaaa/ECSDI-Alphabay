@@ -8,28 +8,22 @@ Ejemplo de agente para implementar los vuestros.
 from __future__ import print_function
 
 import logging
+import random
+from datetime import datetime
+from multiprocessing import Queue
 
-from datetime import datetime, timedelta
-from multiprocessing import Process, Queue
-import socket
-
-from rdflib import Namespace, Graph, RDF, URIRef
 from flask import Flask, request, render_template, make_response, session
-import SPARQLWrapper
+from rdflib import Graph
 
-from AgentUtil.FlaskServer import shutdown_server
-from AgentUtil.SPARQLHelper import filterSPARQLValues
-from AgentUtil.Logging import config_logger
 import AgentUtil.Agents
 import AgentUtil.SPARQLHelper
+from AgentUtil.FlaskServer import shutdown_server
+from AgentUtil.Logging import config_logger
+from AgentUtil.SPARQLHelper import filterSPARQLValues
+from models.InfoProducto import InfoProducto
+from models.Producto import Producto
 
 # Para el sleep
-import time
-
-import random
-from models.InfoProducto import InfoProducto
-from models.Pedido import Pedido
-from models.Producto import Producto
 
 __author__ = 'Swaggaaa'
 
@@ -541,25 +535,8 @@ def tidyup():
     pass
 
 
-# Esta función se ejecuta en bucle (a no ser que lo cambiéis) y es el comportamiento inicial del agente. Aquí podéis
-# mandar mensajes a los demás o hacer el trabajo que no requiera la petición de un agente
-def agentbehavior1(cola):
-    graph = cola.get()
-    while True:
-        time.sleep(1)
-        pass
-
-    pass
-
-
 if __name__ == '__main__':
-    # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
-
     # Ponemos en marcha el servidor
     app.run(host=AgentUtil.Agents.EVALUADOR_HOSTNAME, port=AgentUtil.Agents.EVALUADOR_PORT, threaded=True)
 
-    # Esperamos a que acaben los behaviors
-    ab1.join()
     print('The End')

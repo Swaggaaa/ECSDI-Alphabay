@@ -609,7 +609,7 @@ if __name__ == '__main__':
     app.run(host=AgentUtil.Agents.CENTROLOG_HOSTNAME, port=AgentUtil.Agents.CENTROLOG_PORT, threaded=True)
 
     # Esperamos a que acaben los behaviors
-    # ab1.join()
+    ab1.join()
     ab2.join()
-    # ab3.join()
+    ab3.join()
     print('The End')

@@ -8,9 +8,8 @@ from __future__ import print_function
 import logging
 import random
 # Para el sleep
-import time
-from datetime import datetime, time, timedelta
-from multiprocessing import Process, Queue
+from datetime import datetime, timedelta
+from multiprocessing import Queue
 
 from flask import Flask, request, render_template, session
 from rdflib import Graph, RDF, Literal
@@ -313,7 +312,8 @@ def browser_refund():
             return render_template("resolution.html",
                                    resolution="Your request has been accepted. The transport company in charge of the devolution is %s" % escoger_transportista(),
                                    host_vendedor=(
-                                           AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                           AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(
+                                       AgentUtil.Agents.VENDEDOR_PORT)
                                    ))
 
         else:
@@ -341,13 +341,15 @@ def browser_refund():
                 return render_template("resolution.html",
                                        resolution="Your request has been accepted. The transport company in charge of the devoution is %s" % escoger_transportista(),
                                        host_vendedor=(
-                                               AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                               AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(
+                                           AgentUtil.Agents.VENDEDOR_PORT)
                                        ))
             else:
                 return render_template("resolution.html",
                                        resolution="Your request has not been accepted because it has been %s days since you have received the product" % dias_pasados.days,
                                        host_vendedor=(
-                                               AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                               AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(
+                                           AgentUtil.Agents.VENDEDOR_PORT)
                                        ))
 
 
@@ -389,25 +391,7 @@ def tidyup():
     pass
 
 
-# Esta función se ejecuta en bucle (a no ser que lo cambiéis) y es el comportamiento inicial del agente. Aquí podéis
-# mandar mensajes a los demás o hacer el trabajo que no requiera la petición de un agente
-def agentbehavior1(cola):
-    graph = cola.get()
-    while True:
-        time.sleep(1)
-        pass
-
-    pass
-
-
 if __name__ == '__main__':
-    # Ponemos en marcha los behaviors y pasamos la cola para transmitir información
-    ab1 = Process(target=agentbehavior1, args=(cola1,))
-    ab1.start()
-
     # Ponemos en marcha el servidor
     app.run(host=AgentUtil.Agents.VENDEDOR_HOSTNAME, port=AgentUtil.Agents.VENDEDOR_PORT, threaded=True)
-
-    # Esperamos a que acaben los behaviors
-    ab1.join()
     print('The End')
