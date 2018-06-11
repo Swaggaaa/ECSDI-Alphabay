@@ -21,21 +21,10 @@
     
 
 
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#a_partir_de -->
-
-    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#a_partir_de">
-        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Catalogo"/>
-        <rdfs:comment>Cardinalidad 1 a 1 en sentido de dominio a rango (1 a N en sentido contrario)</rdfs:comment>
-    </owl:ObjectProperty>
-    
-
-
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#a_traves_de -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#a_traves_de">
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Pedido"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Vendedor"/>
         <rdfs:comment>Cardinalidad 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
     </owl:ObjectProperty>
     
@@ -87,7 +76,6 @@
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#contiene -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#contiene">
-        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Catalogo"/>
         <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <rdfs:comment>Cardinalidad 1 a N en sentido dominio a rango (1 a 1 en sentido contrario)</rdfs:comment>
     </owl:ObjectProperty>
@@ -179,27 +167,6 @@
     
 
 
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#obtiene -->
-
-    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#obtiene">
-        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Recomendacion"/>
-        <rdfs:comment>Cardinalidad de 1 a N en sentido dominio a rango (1 a 1 en sentido contrario)</rdfs:comment>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por -->
-
-    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por">
-        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion"/>
-        <rdfs:comment>Cardinalidad de 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
-    </owl:ObjectProperty>
-    
-
-
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por_este -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#por_este">
@@ -224,10 +191,17 @@
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#realiza_una">
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Compra"/>
-        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Devolucion"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Comunicacion"/>
         <rdfs:comment>Cardinalidad de 1 a N en ambos sentidos</rdfs:comment>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#realizada_por -->
+
+    <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#realizada_por">
+        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
+        <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Usuario"/>
     </owl:ObjectProperty>
     
 
@@ -289,7 +263,6 @@
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#vendido_por -->
 
     <owl:ObjectProperty rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#vendido_por">
-        <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Busqueda"/>
         <rdfs:domain rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <rdfs:range rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Proveedor"/>
         <rdfs:comment>Cardinalidad de 1 a 1 en sentido dominio a rango (1 a N en sentido contrario)</rdfs:comment>
@@ -690,15 +663,6 @@
     
 
 
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Catalogo -->
-
-    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Catalogo">
-        <rdfs:comment>Agente Evaluador</rdfs:comment>
-        <rdfs:comment>Contiene un producto por numero de referencia distinto existente en nuestro sistema</rdfs:comment>
-    </owl:Class>
-    
-
-
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Centro_logistico">
@@ -855,6 +819,7 @@ Ag Centro Logistico</rdfs:comment>
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Recomendacion -->
 
     <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Recomendacion">
+        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Consulta"/>
         <rdfs:comment>Agente Evaluador</rdfs:comment>
         <rdfs:comment>Hace referencia a la recomendacion de ciertos productos que se recibe periodicamente</rdfs:comment>
     </owl:Class>
@@ -876,16 +841,6 @@ Ag Centro Logistico</rdfs:comment>
     <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Valoracion">
         <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Accion"/>
         <rdfs:comment>Ag Evaluador</rdfs:comment>
-    </owl:Class>
-    
-
-
-    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Vendedor -->
-
-    <owl:Class rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Vendedor">
-        <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Entidad"/>
-        <rdfs:comment>Ag Cliente</rdfs:comment>
-        <rdfs:comment>Representa el encarregado de llevar a cabo las acciones relacionas con la compra de un pedido</rdfs:comment>
     </owl:Class>
     
 
@@ -958,11 +913,100 @@ The Swoosh logo is noticeable on the left leg</descripcion>
     
 
 
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Ordenador_portátil -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Ordenador_portátil">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <calidad>Good</calidad>
+        <descripcion>Ideal para proyectos de ECSDI</descripcion>
+        <estado>Disponible</estado>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">13</id>
+        <marca>Lenovo</marca>
+        <modelo>2 en 1</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1007</n_ref>
+        <nombre>Ordenador portatil</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">1.2</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">700.0</precio>
+    </owl:NamedIndividual>
+    
+
+
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#SEUR -->
 
     <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#SEUR">
         <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Empresa_de_transporte"/>
         <transportista>SEUR</transportista>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_madera -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_madera">
+        <calidad>Acceptable</calidad>
+        <descripcion>Lo ultimo para el verano</descripcion>
+        <estado>Disponible</estado>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">9</id>
+        <marca>Ikea</marca>
+        <modelo>Silla de playa</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1005</n_ref>
+        <nombre>Silla de madera</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">3.0</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">5.0</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_madera_2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_madera_2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <calidad>Acceptable</calidad>
+        <descripcion>Lo ultimo para el verano</descripcion>
+        <estado>Disponible</estado>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</id>
+        <marca>Ikea</marca>
+        <modelo>Silla de playa</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1005</n_ref>
+        <nombre>Silla de madera</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">3.0</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">5.0</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_madera_3 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_madera_3">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <calidad>Acceptable</calidad>
+        <descripcion>Lo ultimo para el verano</descripcion>
+        <estado>Disponible</estado>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">11</id>
+        <marca>Ikea</marca>
+        <modelo>Silla de playa</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1005</n_ref>
+        <nombre>Silla de madera</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">3.0</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">5.0</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_plastico -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_plastico">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <calidad>Good</calidad>
+        <descripcion>Mini hamaca para estudiantes con poco presupuesto</descripcion>
+        <estado>Disponible</estado>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">12</id>
+        <marca>Garden</marca>
+        <modelo>Silla de playa</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1006</n_ref>
+        <nombre>Silla de plastico</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">5.0</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">20.0</precio>
     </owl:NamedIndividual>
     
 
@@ -1011,6 +1055,41 @@ Heel Type: Flat</descripcion>
         <nombre>Men Sneakers</nombre>
         <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</peso>
         <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">69.99</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Tablet -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Tablet">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
+        <calidad>Good</calidad>
+        <descripcion>Ligera</descripcion>
+        <estado>Disponible</estado>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">14</id>
+        <marca>Samsung</marca>
+        <modelo>2 en 1</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1008</n_ref>
+        <nombre>Tablet</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0.7</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">299.99</precio>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Tablet_2 -->
+
+    <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Tablet_2">
+        <calidad>&quot;Acceptable&quot;</calidad>
+        <descripcion>No util para estudiantes de informatica</descripcion>
+        <estado>Disponible</estado>
+        <id rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">15</id>
+        <marca>Lenovo</marca>
+        <modelo>Profesional</modelo>
+        <n_ref rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1009</n_ref>
+        <nombre>Tablet</nombre>
+        <peso rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">0.4</peso>
+        <precio rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">200.0</precio>
     </owl:NamedIndividual>
     
 

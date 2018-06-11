@@ -273,6 +273,7 @@ def browser_refund():
                           SELECT ?compuesto_por
                           WHERE 
                           {
+                              ?Pedido rdf:type ab:Pedido .
                               ?Pedido ab:comprado_por ?comprado_por.
                               ?Pedido ab:compuesto_por ?compuesto_por.
                           """
@@ -291,6 +292,7 @@ def browser_refund():
                           WHERE 
                           {
                                 %s
+                              ?Producto rdf:type ab:Producto .
                               ?Producto ab:id ?id.
                               ?Producto ab:n_ref ?n_ref.
                               ?Producto ab:nombre ?nombre.
