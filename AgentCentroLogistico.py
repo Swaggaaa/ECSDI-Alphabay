@@ -424,13 +424,17 @@ def solicita_oferta(lote):
                         receiver=AgentUtil.Agents.AgenteTransportista.uri,
                         content=content,
                         msgcnt=mss_cnt)
-    res = send_message(msg, AgentUtil.Agents.AgenteTransportista.address)
+    ab4 = Process(target=send_message, args=(msg, AgentUtil.Agents.AgenteTransportista.address,))
+    ab4.start()
     msg2 = build_message(gmess, perf=ACL.request,
                          sender=AgentUtil.Agents.AgenteCentroLogistico.uri,
                          receiver=AgentUtil.Agents.AgenteTransportista2.uri,
                          content=content,
                          msgcnt=mss_cnt)
-    res2 = send_message(msg2, AgentUtil.Agents.AgenteTransportista2.address)
+    ab5 = Process(target=send_message, args=(msg2, AgentUtil.Agents.AgenteTransportista2.address,))
+    ab5.start()
+    ab4.join()
+    ab5.join()
     mss_cnt += 1
 
 
