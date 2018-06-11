@@ -60,12 +60,12 @@ def login():
         return render_template("login.html")
     else:
         resp = make_response(render_template("index.html",
-                                             host_vendedor=AgentUtil.Agents.hostname + ':' + str(
+                                             host_vendedor=AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(
                                                  AgentUtil.Agents.VENDEDOR_PORT),
                                              username=request.form['nombre'],
-                                             host_representante=AgentUtil.Agents.hostname + ':' + str(
+                                             host_representante=AgentUtil.Agents.REPRESENTANTE_HOSTNAME + ':' + str(
                                                  AgentUtil.Agents.REPRESENTANTE_PORT),
-                                             host_evaluador=AgentUtil.Agents.hostname + ':' + str(
+                                             host_evaluador=AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(
                                                  AgentUtil.Agents.EVALUADOR_PORT)
 
                                              ))
@@ -394,7 +394,7 @@ def browser_search():
             del rec[ "results" ][ "bindings" ][ 0 ]
 
         return render_template("results.html", products=results, username=session['username'], recomendaciones=recomendacion, segun_valoraciones = rec, host_vendedor=(
-                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
+                AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
 
 
 
@@ -407,7 +407,7 @@ def browser_rate():
         no_valorados = get_productos_a_valorar()
 
         return render_template("ratings.html", products=no_valorados, host_evaluador=(
-                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username=session['username'])
+                AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username=session['username'])
 
     else:
 
@@ -426,7 +426,7 @@ def browser_rate():
 
 
         return render_template("ratings.html", products=no_valorados, host_evaluador=(
-                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username= session['username'])
+                AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)), username= session['username'])
 
 
 
@@ -538,7 +538,7 @@ if __name__ == '__main__':
     ab1.start()
 
     # Ponemos en marcha el servidor
-    app.run(host=AgentUtil.Agents.hostname, port=AgentUtil.Agents.EVALUADOR_PORT)
+    app.run(host=AgentUtil.Agents.EVALUADOR_HOSTNAME, port=AgentUtil.Agents.EVALUADOR_PORT)
 
     # Esperamos a que acaben los behaviors
     ab1.join()

@@ -303,7 +303,7 @@ def browser_refund():
         res = AgentUtil.SPARQLHelper.read_query(query)
 
         return render_template("refund.html", products=res, host_vendedor=(
-                AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
+                AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
 
     else:
         if request.form["motivo"] != 'Not satisfied':
@@ -311,7 +311,7 @@ def browser_refund():
             return render_template("resolution.html",
                                    resolution="Your request has been accepted. The transport company in charge of the devolution is %s" % escoger_transportista(),
                                    host_vendedor=(
-                                           AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                           AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
                                    ))
 
         else:
@@ -339,13 +339,13 @@ def browser_refund():
                 return render_template("resolution.html",
                                        resolution="Your request has been accepted. The transport company in charge of the devoution is %s" % escoger_transportista(),
                                        host_vendedor=(
-                                               AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                               AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
                                        ))
             else:
                 return render_template("resolution.html",
                                        resolution="Your request has not been accepted because it has been %s days since you have received the product" % dias_pasados.days,
                                        host_vendedor=(
-                                               AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
+                                               AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)
                                        ))
 
 
@@ -404,7 +404,7 @@ if __name__ == '__main__':
     ab1.start()
 
     # Ponemos en marcha el servidor
-    app.run(host=AgentUtil.Agents.hostname, port=AgentUtil.Agents.VENDEDOR_PORT)
+    app.run(host=AgentUtil.Agents.VENDEDOR_HOSTNAME, port=AgentUtil.Agents.VENDEDOR_PORT)
 
     # Esperamos a que acaben los behaviors
     ab1.join()

@@ -108,7 +108,7 @@ def browser_search():
                 logger.info("[#] Hemos añadido un nuevo producto al catalogo con id: %s" % id_product)
 
         return render_template("add_product_ok.html", host_evaluador=(
-                    AgentUtil.Agents.hostname + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)))
+                    AgentUtil.Agents.EVALUADOR_HOSTNAME + ':' + str(AgentUtil.Agents.EVALUADOR_PORT)))
 
 
 # Aqui se recibiran todos los mensajes. A diferencia de una API Rest (como hacemos en ASW o PES), aqui hay solo 1
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     ab1.start()
 
     # Ponemos en marcha el servidor
-    app.run(host=AgentUtil.Agents.hostname, port=AgentUtil.Agents.REPRESENTANTE_PORT)
+    app.run(host=AgentUtil.Agents.REPRESENTANTE_HOSTNAME, port=AgentUtil.Agents.REPRESENTANTE_PORT)
 
     # Esperamos a que acaben los behaviors
     ab1.join()
