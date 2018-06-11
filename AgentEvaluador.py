@@ -218,7 +218,8 @@ def browser_search():
 
         res = AgentUtil.SPARQLHelper.read_query(query)
         for product in res['results']['bindings']:
-            recomendaciones.append(product['n_ref']['value'])
+            if product[ 'n_ref' ][ 'value' ] != '':
+                recomendaciones.append(product['n_ref']['value'])
 
         # Buscamos coincidencias con modelo
         query = """
@@ -251,7 +252,8 @@ def browser_search():
 
         res = AgentUtil.SPARQLHelper.read_query(query)
         for product in res[ 'results' ][ 'bindings' ]:
-            recomendaciones.append(product[ 'n_ref' ][ 'value' ])
+            if product[ 'n_ref' ][ 'value' ] != '':
+                recomendaciones.append(product[ 'n_ref' ][ 'value' ])
 
         #Buscamos coincidencias con n_ref
         query = """
@@ -266,7 +268,9 @@ def browser_search():
         res = AgentUtil.SPARQLHelper.read_query(query)
 
         for product in res['results' ][ 'bindings' ]:
-            recomendaciones.append(product[ 'n_ref' ][ 'value' ])
+            if product['n_ref']['value'] != '':
+                recomendaciones.append(product[ 'n_ref' ][ 'value' ])
+
 
         query = """
                 prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -286,7 +290,7 @@ def browser_search():
                   ?Producto ab:precio ?precio. 
                   }GROUP BY ?n_ref
                
-              """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", recomendaciones, True)
+              """ % AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", recomendaciones, False)
 
         recomendacion = AgentUtil.SPARQLHelper.read_query(query)
 
@@ -315,7 +319,7 @@ def browser_search():
                         %s
                         ?Producto ab:marca ?marca .
                         ?Producto ab:n_ref ?n_ref }
-        """ %  AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", valorados, True)
+        """ %  AgentUtil.SPARQLHelper.filterSPARQLValues("?n_ref", valorados, False)
 
         marcas_valoradas = AgentUtil.SPARQLHelper.read_query(query)
 
@@ -323,29 +327,41 @@ def browser_search():
         for marca in marcas_valoradas['results']['bindings']:
             query = """
                             prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
-                            SELECT ?n_ref
+                            SELECT DISTINCT ?n_ref
                             WHERE {
                                 ?Producto ab:n_ref ?n_ref .
-                                ?Producto ab:marca '%s' }
+                                ?Producto ab:marca "%s" }
                             """ % marca['marca']['value']
 
             productos_marca = AgentUtil.SPARQLHelper.read_query(query)
+            productos = []
 
+            for p in productos_marca['results']['bindings']:
+                productos.append(p['n_ref']['value'])
             query = """
                             prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
                             
-                            SELECT (AVG(?puntuacion) AS rate)
+                            SELECT ?puntuacion
                             WHERE {
                                 %(filter)s
-                                ?Valoracion ab:sobre ?sobre .
+                                ?Valoracion ab:sobre_un ?sobre_un .
                                 ?Valoracion ab:autor '%(autor)s' .
                                 ?Valoracion ab:puntuacion ?puntuacion }
-                            """ % {'filter': AgentUtil.SPARQLHelper.filterSPARQLValues("?sobre", productos_marca, False), 'autor':session['username']}
+                            """ % {'filter': AgentUtil.SPARQLHelper.filterSPARQLValues("?sobre_un", productos, True), 'autor':session['username']}
             puntuacion = AgentUtil.SPARQLHelper.read_query(query)
-            puntuacion = puntuacion['results']['bindings'][0]['rate']['value']
+            puntuacion = puntuacion['results']['bindings']
 
-            if (puntuacion > 3):
-                marcas_positivas.append(marca['marca']['value'])
+            count = 0
+            score = 0
+
+            for p in puntuacion:
+                count += 1
+                score += int(p['puntuacion']['value'])
+
+            if (count != 0):
+                puntuacion = score/count
+                if (puntuacion > 3):
+                    marcas_positivas.append(marca['marca']['value'])
 
         query = """
                             prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
