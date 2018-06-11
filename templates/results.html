@@ -36,6 +36,7 @@ table {
     <tr>
         <th></th><th>Ref. Number</th> <th>Name</th> <th>Model</th> <th>Quality</th> <th>Availability</th> <th>Price</th>
     </tr>
+	{% if recomendaciones != None %}
         {% for product in recomendaciones["results"]["bindings"] %}
             <tr>
                 <td><input type="checkbox" name="items" value="{{product['n_ref_id']['value']}}"/></td>
@@ -48,6 +49,7 @@ table {
                 <td>{{product["n_ref_precio"]["value"]}}</td>
             </tr>
         {% endfor %}
+	{% endif %}
 </table>
 
 <p>Recommended products according to your valorations</p>
