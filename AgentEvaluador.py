@@ -186,6 +186,7 @@ def browser_search():
                            prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
     
                           INSERT DATA{ 
+                              ab:Busqueda%(id)s rdf:type ab:Busqueda .
                               ab:Busqueda%(id)s ab:realizada_por '%(usuario)s' .
                               ab:Busqueda%(id)s ab:n_ref '%(n_ref)s' .
                               ab:Busqueda%(id)s ab:nombre '%(nombre)s' .
@@ -197,11 +198,9 @@ def browser_search():
                                  'n_ref': request.form['n_ref'], 'nombre': request.form['nombre'],
                                  'calidad': request.form['calidad'], 'modelo': request.form['modelo'],
                                  'precio_min': request.form['minprecio'], 'precio_max': request.form['maxprecio']}
-                          
 
             AgentUtil.SPARQLHelper.update_query(query)
-                                   
-        
+
         # Buscamos coincidencias con nombre
         query = """
                     prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
@@ -229,13 +228,17 @@ def browser_search():
                             ?Producto ab:n_ref ?n_ref .
         
             """
-            
-        if len(nombres) == 0:
-            query += "FILTER regex(str(?nombre), 'zzzzzzzz') ."
-        else:
-            for nombre in nombres:
-                query += "FILTER regex(str(?nombre), '%s') . " % nombre 
-                
+
+        entered = False
+        for nombre in nombres:
+            if nombre == '':
+                continue
+            entered = True
+            query += "FILTER regex(str(?nombre), '%s') . " % nombre
+
+        if not entered:
+            query += "FILTER regex(str(?nombre), 'zzzzzzzz') . "
+
         query += " } "
 
         res = AgentUtil.SPARQLHelper.read_query(query)
@@ -268,35 +271,20 @@ def browser_search():
                                     ?Producto ab:modelo ?modelo .
                                     ?Producto ab:n_ref ?n_ref .
                     """
-                    
-        print(modelos)
-        
-        if len(modelos) == 0:
-            query += "FILTER regex(str(?modelo), 'zzzzzzzz') ."
-        else:
-            for modelo in modelos:
-                query += "FILTER regex(str(?modelo), '%s') . " % modelo 
-                
+
+        entered = False
+        for modelo in modelos:
+            if modelo == '':
+                continue
+            entered = True
+            query += "FILTER regex(str(?modelo), '%s') . " % modelo
+
+        if not entered:
+            query += "FILTER regex(str(?modelo), 'zzzzzzzz') . "
+
         query += " } "
 
         res = AgentUtil.SPARQLHelper.read_query(query)
-        for product in res['results']['bindings']:
-            if product['n_ref']['value'] != '':
-                recomendaciones.append(product['n_ref']['value'])
-
-        # Buscamos coincidencias con n_ref
-        query = """
-                    prefix ab:<http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#>
-    
-                    SELECT DISTINCT ?n_ref
-                    WHERE {
-                            ?Busqueda rdf:type ab:Busqueda .
-                            ?Busqueda ab:n_ref ?n_ref
-                        }
-    
-                    """
-        res = AgentUtil.SPARQLHelper.read_query(query)
-
         for product in res['results']['bindings']:
             if product['n_ref']['value'] != '':
                 recomendaciones.append(product['n_ref']['value'])
@@ -379,7 +367,7 @@ def browser_search():
                                 ?Valoracion ab:autor '%(autor)s' .
                                 ?Valoracion ab:puntuacion ?puntuacion }
                             """ % {'filter': AgentUtil.SPARQLHelper.filterSPARQLValues("?sobre_un", productos, True),
-                                'autor': session['username']}
+                                   'autor': session['username']}
             puntuacion = AgentUtil.SPARQLHelper.read_query(query)
             puntuacion = puntuacion['results']['bindings']
 
@@ -428,7 +416,7 @@ def browser_search():
 
         return render_template("results.html", products=results, username=session['username'],
                                recomendaciones=recomendacion, segun_valoraciones=rec, host_vendedor=(
-AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
+                    AgentUtil.Agents.VENDEDOR_HOSTNAME + ':' + str(AgentUtil.Agents.VENDEDOR_PORT)))
 
 
 @app.route("/rate", methods=['GET', 'POST'])
