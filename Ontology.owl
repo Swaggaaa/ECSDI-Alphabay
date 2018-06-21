@@ -943,6 +943,7 @@ The Swoosh logo is noticeable on the left leg</descripcion>
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_madera -->
 
     <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Silla_de_madera">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <calidad>Acceptable</calidad>
         <descripcion>Lo ultimo para el verano</descripcion>
         <estado>Disponible</estado>
@@ -1080,6 +1081,7 @@ Heel Type: Flat</descripcion>
     <!-- http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Tablet_2 -->
 
     <owl:NamedIndividual rdf:about="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Tablet_2">
+        <rdf:type rdf:resource="http://www.semanticweb.org/elenaalonso/ontologies/2018/4/OnlineShop#Producto"/>
         <calidad>&quot;Acceptable&quot;</calidad>
         <descripcion>No util para estudiantes de informatica</descripcion>
         <estado>Disponible</estado>

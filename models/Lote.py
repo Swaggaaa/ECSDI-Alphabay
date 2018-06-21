@@ -1,7 +1,8 @@
 class Lote(object):
-    id = 0
-    peso_total = 0.0
-    volumen = 0.0
-    ciudad_destino = ""
-    prioridad = ""
-    transportista = ""
+    def __init__(self):
+        self.id = 0
+        self.peso_total = 0.0
+        self.volumen = 0.0
+        self.ciudad_destino = ""
+        self.prioridad = ""
+        self.transportista = ""

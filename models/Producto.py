@@ -1,10 +1,11 @@
 class Producto(object):
-    id = 0
-    n_ref = ""
-    calidad = ""
-    descripcion = ""
-    nombre = ""
-    modelo = ""
-    peso = 0.0
-    marca = ""
-    precio = 0.0
+    def __init__(self):
+        self.id = 0
+        self.n_ref = ""
+        self.calidad = ""
+        self.descripcion = ""
+        self.nombre = ""
+        self.modelo = ""
+        self.peso = 0.0
+        self.marca = ""
+        self.precio = 0.0

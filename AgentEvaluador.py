@@ -202,10 +202,12 @@ def browser_search():
                     SELECT DISTINCT ?nombre
                     WHERE {
                             ?Busqueda rdf:type ab:Busqueda .
-                            ?Busqueda ab:nombre ?nombre
+                            ?Busqueda ab:nombre ?nombre .
+                            ?Busqueda ab:realizada_por ?realizada_por .
+                            FILTER regex(str(?realizada_por), '%s') .
                         }
                     
-                    """
+                    """ % session['username']
 
         nombres_buscados = AgentUtil.SPARQLHelper.read_query(query)['results']['bindings']
         nombres = []
@@ -246,9 +248,12 @@ def browser_search():
                             SELECT DISTINCT ?modelo
                             WHERE {
                                     ?Busqueda rdf:type ab:Busqueda .
-                                    ?Busqueda ab:modelo ?modelo
-                                }
-                            """
+                                    ?Busqueda ab:modelo ?modelo .
+                                    ?Busqueda ab:realizada_por ?realizada_por .
+                                    FILTER regex(str(?realizada_por), '%s') .
+                        }
+                    
+                    """ % session['username']
 
         modelos_buscados = AgentUtil.SPARQLHelper.read_query(query)
         modelos_buscados = modelos_buscados['results']['bindings']

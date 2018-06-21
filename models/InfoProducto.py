@@ -2,7 +2,8 @@ from models.Producto import Producto
 
 
 class InfoProducto(object):
-    id = 0
-    transportista = ""
-    fecha = ""
-    nombre = ""
+    def __init__(self):
+        self.id = 0
+        self.transportista = ""
+        self.fecha = ""
+        self.nombre = ""

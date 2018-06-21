@@ -67,7 +67,9 @@ def comunicacion():
                 content = msgdic['content']
 
                 if 'notificar-envios' in str(content):
-                    ids = gm.value(subject=content, predicate=AB.id)
+                    ids = []
+                    for id in gm.objects(subject=content, predicate=AB.id):
+                        ids.append(id)
                     transportista = gm.value(subject=content, predicate=AB.transportista)
 
                     logger.info("[#] Percepcion - Debemos notificar a los usuarios de sus pedidos enviados!")

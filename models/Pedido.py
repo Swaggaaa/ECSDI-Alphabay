@@ -1,8 +1,9 @@
 class Pedido(object):
-    id = 0
-    prioridad = ""
-    fecha_compra = ""
-    direccion = ""
-    ciudad = ""
-    compuesto_por = []
-    peso_total = 0.0
+    def __init__(self):
+        self.id = 0
+        self.prioridad = ""
+        self.fecha_compra = ""
+        self.direccion = ""
+        self.ciudad = ""
+        self.compuesto_por = []
+        self.peso_total = 0.0
